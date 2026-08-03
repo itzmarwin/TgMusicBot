@@ -287,6 +287,7 @@ func (y *youTubeData) downloadWithApi(videoID string, _ bool) (string, error) {
 	api := newApiData(videoUrl)
 	track, err := api.getTrack()
 	if err != nil {
+		slog.Info("Error creating download: " + err.Error())
 		return "", err
 	}
 
