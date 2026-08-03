@@ -165,10 +165,12 @@ func (y *youTubeData) downloadTrack(info utils.TrackInfo, video bool) (string, e
 		return info.CdnURL, nil
 	}
 
-	if !video && y.ApiUrl != "" && y.APIKey != "" {
-		if filePath, err := y.downloadWithApi(info.Id, video); err == nil {
+	if !video {
+		filePath, err := y.downloadWithApi(info.Id, video)
+		if err == nil {
 			return filePath, nil
 		}
+		slog.Warn("downloadWithApi failed, falling back to yt-dlp", "video_id", info.Id, "error", err)
 	}
 
 	return y.downloadWithYtDlp(info.Id, video)
