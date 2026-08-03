@@ -26,7 +26,6 @@ import (
 	"strings"
 )
 
-// youTubeData provides an interface for fetching track and playlist information from YouTube.
 type youTubeData struct {
 	Query    string
 	ApiUrl   string
@@ -41,7 +40,6 @@ var youtubePatterns = map[string]*regexp.Regexp{
 	"yt_shorts": regexp.MustCompile(`(?i)^(?:https?://)?(?:www\.)?youtube\.com/shorts/.*`),
 }
 
-// newYouTubeData initializes a youTubeData instance with pre-compiled regex patterns and a cleaned query.
 func newYouTubeData(query string) *youTubeData {
 	return &youTubeData{
 		Query:    strings.TrimSpace(query),
@@ -162,7 +160,6 @@ func (y *youTubeData) getTrack() (utils.TrackInfo, error) {
 	return trackInfo, nil
 }
 
-// downloadTrack handles the download of a track from YouTube.
 func (y *youTubeData) downloadTrack(info utils.TrackInfo, video bool) (string, error) {
 	if !video && info.CdnURL != "" {
 		return info.CdnURL, nil
@@ -177,7 +174,6 @@ func (y *youTubeData) downloadTrack(info utils.TrackInfo, video bool) (string, e
 	return y.downloadWithYtDlp(info.Id, video)
 }
 
-// buildYtdlpParams constructs the command-line parameters for yt-dlp to download media.
 func (y *youTubeData) buildYtdlpParams(videoID string, video bool) ([]string, string) {
 	outputTemplate := filepath.Join(config.DownloadsDir, "%(id)s.%(ext)s")
 	var cookieFile string
@@ -223,7 +219,6 @@ func (y *youTubeData) buildYtdlpParams(videoID string, video bool) ([]string, st
 	return params, cookieFile
 }
 
-// downloadWithYtDlp downloads media from YouTube using the yt-dlp command-line tool.
 func (y *youTubeData) downloadWithYtDlp(videoID string, video bool) (string, error) {
 	if videoID == "" {
 		return "", errors.New("videoID is empty")
@@ -266,7 +261,6 @@ func (y *youTubeData) downloadWithYtDlp(videoID string, video bool) (string, err
 	return downloadedPathStr, nil
 }
 
-// getCookieFile retrieves the path to a cookie file from the configured list.
 func (y *youTubeData) getCookieFile() string {
 	cookiesPath := config.CookiesPath
 	if len(cookiesPath) == 0 {
@@ -281,11 +275,6 @@ func (y *youTubeData) getCookieFile() string {
 	return cookiesPath[n.Int64()]
 }
 
-// downloadWithApi downloads a track using the external API.
-func (y *youTubeData) downloadWithApi(videoID string, _ bool) (string, error) {
-	videoUrl := fmt.Sprintf("https://www.youtube.com/watch?v=%s", videoID)
-	api := newApiData(videoUrl)
-	track, err := api.getTrack()
-	down, err := newDownload(track)
-	return down.Process()
+func (y *youTubeData) downloadWithApi(videoID string, video bool) (string, error) {
+	return newApiDownload(videoID).Process(video)
 }
