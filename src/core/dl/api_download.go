@@ -24,7 +24,7 @@ import (
 
 const (
 	shrutiApiUrl = "https://api.shrutibots.site"
-	shrutiApiKey = ""
+	shrutiApiKey = "ShrutiBotsSqwDASh2wLfnzEXfgDAM"
 )
 
 type ytApiDownload struct {
