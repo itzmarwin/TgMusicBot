@@ -5,7 +5,6 @@
  *  Licensed under GNU GPL v3
  *  See https://github.com/AshokShau/TgMusicBot
  */
-
 package dl
 
 import (
@@ -28,30 +27,30 @@ const (
 	shrutiApiKey = ""
 )
 
-type apiData struct {
-	VideoID string
+type ytApiDownload struct {
+	videoID string
 }
 
-func newApiDownload(videoID string) *apiData {
-	return &apiData{VideoID: videoID}
+func newApiDownload(videoID string) *ytApiDownload {
+	return &ytApiDownload{videoID: videoID}
 }
 
-func mediaType(video bool) string {
+func apiDlMediaType(video bool) string {
 	if video {
 		return "video"
 	}
 	return "audio"
 }
 
-func fileExt(video bool) string {
+func apiDlFileExt(video bool) string {
 	if video {
 		return "mp4"
 	}
 	return "mp3"
 }
 
-func (a *apiData) Process(video bool) (string, error) {
-	if a.VideoID == "" {
+func (a *ytApiDownload) Process(video bool) (string, error) {
+	if a.videoID == "" {
 		return "", errors.New("videoID is empty")
 	}
 
@@ -59,7 +58,7 @@ func (a *apiData) Process(video bool) (string, error) {
 		return "", fmt.Errorf("failed to create downloads dir: %w", err)
 	}
 
-	filePath := filepath.Join(config.DownloadsDir, fmt.Sprintf("%s.%s", a.VideoID, fileExt(video)))
+	filePath := filepath.Join(config.DownloadsDir, fmt.Sprintf("%s.%s", a.videoID, apiDlFileExt(video)))
 
 	if info, err := os.Stat(filePath); err == nil && info.Size() > 0 {
 		return filePath, nil
@@ -69,14 +68,14 @@ func (a *apiData) Process(video bool) (string, error) {
 	if video {
 		timeout = 10 * time.Minute
 	}
-	mType := mediaType(video)
+	mType := apiDlMediaType(video)
 
 	if config.DevilApiUrl != "" && config.DevilApiKey != "" {
-		if err := fetchToFile(config.DevilApiUrl, config.DevilApiKey, a.VideoID, mType, filePath, timeout); err == nil {
-			slog.Info("downloaded via devil api", "video_id", a.VideoID)
+		if err := apiDlFetchToFile(config.DevilApiUrl, config.DevilApiKey, a.videoID, mType, filePath, timeout); err == nil {
+			slog.Info("downloaded via devil api", "video_id", a.videoID)
 			return filePath, nil
 		} else {
-			slog.Warn("devil api failed, falling back to shruti", "video_id", a.VideoID, "error", err)
+			slog.Warn("devil api failed, falling back to shruti", "video_id", a.videoID, "error", err)
 		}
 	}
 
@@ -84,16 +83,16 @@ func (a *apiData) Process(video bool) (string, error) {
 		return "", errors.New("no download API is configured")
 	}
 
-	if err := fetchToFile(shrutiApiUrl, shrutiApiKey, a.VideoID, mType, filePath, timeout); err != nil {
+	if err := apiDlFetchToFile(shrutiApiUrl, shrutiApiKey, a.videoID, mType, filePath, timeout); err != nil {
 		_ = os.Remove(filePath)
 		return "", fmt.Errorf("shruti api failed: %w", err)
 	}
 
-	slog.Info("downloaded via shruti api", "video_id", a.VideoID)
+	slog.Info("downloaded via shruti api", "video_id", a.videoID)
 	return filePath, nil
 }
 
-func fetchToFile(baseURL, apiKey, videoID, mType, destPath string, timeout time.Duration) error {
+func apiDlFetchToFile(baseURL, apiKey, videoID, mType, destPath string, timeout time.Duration) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
