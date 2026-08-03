@@ -286,16 +286,8 @@ func (y *youTubeData) downloadWithApi(videoID string, _ bool) (string, error) {
 	videoUrl := fmt.Sprintf("https://www.youtube.com/watch?v=%s", videoID)
 	api := newApiData(videoUrl)
 	track, err := api.getTrack()
-	if err != nil {
-		slog.Info("Error creating download: " + err.Error())
-		return "", err
-	}
-
+	...
 	down, err := newDownload(track)
-	if err != nil {
-		slog.Info("Error creating download: " + err.Error())
-		return "", err
-	}
-
+	...
 	return down.Process()
 }
