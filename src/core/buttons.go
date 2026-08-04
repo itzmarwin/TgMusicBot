@@ -58,8 +58,14 @@ var SourceCodeBtn = url("Source Code", "https://github.com/AshokShau/TgMusicBot"
 var channelBtn = url("Updates", config.SupportChannel, gotdbot.ButtonStyleDefault{})
 var groupBtn = url("Group", config.SupportGroup, gotdbot.ButtonStyleDefault{})
 
-// groupAddBtn opens the "add bot to group" flow using the bot's own username.
-var groupAddBtn = url("Add Me In Your Group", "https://t.me/MikasaMusicV2Bot?startgroup=true", gotdbot.ButtonStylePrimary{})
+// groupAddButton builds the "add me to your group" button using the bot's own username.
+func groupAddButton(c *gotdbot.Client) gotdbot.InlineKeyboardButton {
+	return url(
+		"Add Me",
+		fmt.Sprintf("https://t.me/%s?startgroup=true", c.Me.Usernames.EditableUsername),
+		gotdbot.ButtonStylePrimary{},
+	)
+}
 
 func SupportKeyboard() *gotdbot.ReplyMarkupInlineKeyboard {
 	return &gotdbot.ReplyMarkupInlineKeyboard{
@@ -141,7 +147,7 @@ func BackHelpMenuKeyboard() *gotdbot.ReplyMarkupInlineKeyboard {
 	}
 }
 
-func ControlButtons(mode string) *gotdbot.ReplyMarkupInlineKeyboard {
+func ControlButtons(c *gotdbot.Client, mode string) *gotdbot.ReplyMarkupInlineKeyboard {
 	skipBtn := cb("‣‣I", "play_skip", gotdbot.ButtonStyleDefault{})
 	stopBtn := cb("▢", "play_stop", gotdbot.ButtonStyleDefault{})
 	pauseBtn := cb("II", "play_pause", gotdbot.ButtonStyleDefault{})
@@ -155,7 +161,7 @@ func ControlButtons(mode string) *gotdbot.ReplyMarkupInlineKeyboard {
 		return &gotdbot.ReplyMarkupInlineKeyboard{
 			Rows: [][]gotdbot.InlineKeyboardButton{
 				{skipBtn, stopBtn, pauseBtn},
-				{groupAddBtn},
+				{groupAddButton(c)},
 				{CloseBtn},
 			},
 		}
@@ -223,10 +229,10 @@ func PlayNowButton(trackID string) gotdbot.InlineKeyboardButton {
 	return cb("Play Now", fmt.Sprintf("play_now_%s", trackID), gotdbot.ButtonStyleDanger{})
 }
 
-func QueueMarkup(trackID string) *gotdbot.ReplyMarkupInlineKeyboard {
+func QueueMarkup(c *gotdbot.Client, trackID string) *gotdbot.ReplyMarkupInlineKeyboard {
 	return &gotdbot.ReplyMarkupInlineKeyboard{
 		Rows: [][]gotdbot.InlineKeyboardButton{
-			{groupAddBtn, CloseBtn},
+			{groupAddButton(c), CloseBtn},
 		},
 	}
 }
