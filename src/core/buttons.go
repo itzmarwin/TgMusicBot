@@ -138,23 +138,26 @@ func BackHelpMenuKeyboard() *gotdbot.ReplyMarkupInlineKeyboard {
 	}
 }
 
-func AddMeButton() gotdbot.InlineKeyboardButton {
+// AddMeButton – Play वाले मैसेज के लिए (username पैरामीटर)
+func AddMeButton(username string) gotdbot.InlineKeyboardButton {
 	return url(
 		"Add Me In Your Group",
-		fmt.Sprintf("https://t.me/%s?startgroup=true", config.BotUsername),
+		fmt.Sprintf("https://t.me/%s?startgroup=true", username),
 		gotdbot.ButtonStylePrimary{},
 	)
 }
 
-func AddMeShortButton() gotdbot.InlineKeyboardButton {
+// AddMeShortButton – Queue वाले मैसेज के लिए (username पैरामीटर)
+func AddMeShortButton(username string) gotdbot.InlineKeyboardButton {
 	return url(
 		"Add Me",
-		fmt.Sprintf("https://t.me/%s?startgroup=true", config.BotUsername),
+		fmt.Sprintf("https://t.me/%s?startgroup=true", username),
 		gotdbot.ButtonStylePrimary{},
 	)
 }
 
-func ControlButtons(mode string) *gotdbot.ReplyMarkupInlineKeyboard {
+// ControlButtons – अब mode और username दोनों लेता है
+func ControlButtons(mode string, username string) *gotdbot.ReplyMarkupInlineKeyboard {
 	skipBtn := cb("‣‣I", "play_skip", gotdbot.ButtonStyleDefault{})
 	stopBtn := cb("▢", "play_stop", gotdbot.ButtonStyleDefault{})
 	pauseBtn := cb("II", "play_pause", gotdbot.ButtonStyleDefault{})
@@ -178,7 +181,7 @@ func ControlButtons(mode string) *gotdbot.ReplyMarkupInlineKeyboard {
 		row1 = []gotdbot.InlineKeyboardButton{CloseBtn}
 	}
 
-	row2 := []gotdbot.InlineKeyboardButton{AddMeButton()}
+	row2 := []gotdbot.InlineKeyboardButton{AddMeButton(username)}
 	row3 := []gotdbot.InlineKeyboardButton{CloseBtn}
 
 	return &gotdbot.ReplyMarkupInlineKeyboard{
@@ -211,10 +214,11 @@ func PlayNowButton(trackID string) gotdbot.InlineKeyboardButton {
 	return cb("Play Now", fmt.Sprintf("play_now_%s", trackID), gotdbot.ButtonStyleDanger{})
 }
 
-func QueueMarkup() *gotdbot.ReplyMarkupInlineKeyboard {
+// QueueMarkup – अब username लेता है (trackID हटा दिया)
+func QueueMarkup(username string) *gotdbot.ReplyMarkupInlineKeyboard {
 	return &gotdbot.ReplyMarkupInlineKeyboard{
 		Rows: [][]gotdbot.InlineKeyboardButton{
-			{AddMeShortButton(), CloseBtn},
+			{AddMeShortButton(username), CloseBtn},
 		},
 	}
 }
