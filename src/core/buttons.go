@@ -16,6 +16,8 @@ import (
 	"github.com/AshokShau/gotdbot"
 )
 
+var BotUsername string
+
 func cb(text, data string, style gotdbot.ButtonStyle) gotdbot.InlineKeyboardButton {
 	return gotdbot.InlineKeyboardButton{
 		Text: text,
@@ -44,6 +46,14 @@ func url(text, link string, style gotdbot.ButtonStyle) gotdbot.InlineKeyboardBut
 	}
 }
 
+func groupAddButton(text string) gotdbot.InlineKeyboardButton {
+	return url(
+		text,
+		fmt.Sprintf("https://t.me/%s?startgroup=true", BotUsername),
+		gotdbot.ButtonStylePrimary{},
+	)
+}
+
 var CloseBtn = cb("Close", "vcplay_close", gotdbot.ButtonStyleDanger{})
 var HomeBtn = cb("Home", "help_back", gotdbot.ButtonStylePrimary{})
 var HelpBtn = cb("Help", "help_all", gotdbot.ButtonStyleDefault{})
@@ -57,15 +67,6 @@ var AutoplayBtn = cb("Autoplay", "help_autoplay", gotdbot.ButtonStyleDefault{})
 var SourceCodeBtn = url("Source Code", "https://github.com/AshokShau/TgMusicBot", gotdbot.ButtonStylePrimary{})
 var channelBtn = url("Updates", config.SupportChannel, gotdbot.ButtonStyleDefault{})
 var groupBtn = url("Group", config.SupportGroup, gotdbot.ButtonStyleDefault{})
-
-// groupAddButton builds the "add me to your group" button using the bot's own username.
-func groupAddButton(c *gotdbot.Client) gotdbot.InlineKeyboardButton {
-	return url(
-		"Add Me",
-		fmt.Sprintf("https://t.me/%s?startgroup=true", c.Me.Usernames.EditableUsername),
-		gotdbot.ButtonStylePrimary{},
-	)
-}
 
 func SupportKeyboard() *gotdbot.ReplyMarkupInlineKeyboard {
 	return &gotdbot.ReplyMarkupInlineKeyboard{
@@ -147,13 +148,14 @@ func BackHelpMenuKeyboard() *gotdbot.ReplyMarkupInlineKeyboard {
 	}
 }
 
-func ControlButtons(c *gotdbot.Client, mode string) *gotdbot.ReplyMarkupInlineKeyboard {
+func ControlButtons(mode string) *gotdbot.ReplyMarkupInlineKeyboard {
 	skipBtn := cb("‣‣I", "play_skip", gotdbot.ButtonStyleDefault{})
 	stopBtn := cb("▢", "play_stop", gotdbot.ButtonStyleDefault{})
 	pauseBtn := cb("II", "play_pause", gotdbot.ButtonStyleDefault{})
 	resumeBtn := cb("▷", "play_resume", gotdbot.ButtonStyleDefault{})
 	muteBtn := cb("🔇", "play_mute", gotdbot.ButtonStyleDefault{})
 	unmuteBtn := cb("🔊", "play_unmute", gotdbot.ButtonStyleDefault{})
+	addToPlaylistBtn := cb("➕", "play_add_to_list", gotdbot.ButtonStylePrimary{})
 
 	switch mode {
 
@@ -161,8 +163,8 @@ func ControlButtons(c *gotdbot.Client, mode string) *gotdbot.ReplyMarkupInlineKe
 		return &gotdbot.ReplyMarkupInlineKeyboard{
 			Rows: [][]gotdbot.InlineKeyboardButton{
 				{skipBtn, stopBtn, pauseBtn},
-				{groupAddButton(c)},
-				{CloseBtn},
+				{addToPlaylistBtn, CloseBtn},
+				{groupAddButton("➕ Add Me In Your Group")},
 			},
 		}
 
@@ -229,10 +231,11 @@ func PlayNowButton(trackID string) gotdbot.InlineKeyboardButton {
 	return cb("Play Now", fmt.Sprintf("play_now_%s", trackID), gotdbot.ButtonStyleDanger{})
 }
 
-func QueueMarkup(c *gotdbot.Client, trackID string) *gotdbot.ReplyMarkupInlineKeyboard {
+func QueueMarkup(trackID string) *gotdbot.ReplyMarkupInlineKeyboard {
 	return &gotdbot.ReplyMarkupInlineKeyboard{
 		Rows: [][]gotdbot.InlineKeyboardButton{
-			{groupAddButton(c), CloseBtn},
+			{PlayNowButton(trackID), CloseBtn},
+			{groupAddButton("➕ Add Me")},
 		},
 	}
 }
