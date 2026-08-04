@@ -138,63 +138,55 @@ func BackHelpMenuKeyboard() *gotdbot.ReplyMarkupInlineKeyboard {
 	}
 }
 
-func ControlButtons(mode string) *gotdbot.ReplyMarkupInlineKeyboard {
+func AddMeButton(username string) gotdbot.InlineKeyboardButton {
+	return url(
+		"Add Me In Your Group",
+		fmt.Sprintf("https://t.me/%s?startgroup=true", username),
+		gotdbot.ButtonStylePrimary{},
+	)
+}
+
+func AddMeShortButton(username string) gotdbot.InlineKeyboardButton {
+	return url(
+		"Add Me",
+		fmt.Sprintf("https://t.me/%s?startgroup=true", username),
+		gotdbot.ButtonStylePrimary{},
+	)
+}
+
+func ControlButtons(mode string, username string) *gotdbot.ReplyMarkupInlineKeyboard {
 	skipBtn := cb("‣‣I", "play_skip", gotdbot.ButtonStyleDefault{})
 	stopBtn := cb("▢", "play_stop", gotdbot.ButtonStyleDefault{})
 	pauseBtn := cb("II", "play_pause", gotdbot.ButtonStyleDefault{})
 	resumeBtn := cb("▷", "play_resume", gotdbot.ButtonStyleDefault{})
 	muteBtn := cb("🔇", "play_mute", gotdbot.ButtonStyleDefault{})
 	unmuteBtn := cb("🔊", "play_unmute", gotdbot.ButtonStyleDefault{})
-	addToPlaylistBtn := cb("➕", "play_add_to_list", gotdbot.ButtonStylePrimary{})
 
+	var row1 []gotdbot.InlineKeyboardButton
 	switch mode {
-
 	case "play":
-		return &gotdbot.ReplyMarkupInlineKeyboard{
-			Rows: [][]gotdbot.InlineKeyboardButton{
-				{skipBtn, stopBtn, pauseBtn},
-				{addToPlaylistBtn, CloseBtn},
-			},
-		}
-
+		row1 = []gotdbot.InlineKeyboardButton{skipBtn, stopBtn, pauseBtn}
 	case "pause":
-		return &gotdbot.ReplyMarkupInlineKeyboard{
-			Rows: [][]gotdbot.InlineKeyboardButton{
-				{skipBtn, stopBtn, resumeBtn},
-				{CloseBtn},
-			},
-		}
-
+		row1 = []gotdbot.InlineKeyboardButton{skipBtn, stopBtn, resumeBtn}
 	case "resume":
-		return &gotdbot.ReplyMarkupInlineKeyboard{
-			Rows: [][]gotdbot.InlineKeyboardButton{
-				{skipBtn, stopBtn, pauseBtn},
-				{CloseBtn},
-			},
-		}
-
+		row1 = []gotdbot.InlineKeyboardButton{skipBtn, stopBtn, pauseBtn}
 	case "mute":
-		return &gotdbot.ReplyMarkupInlineKeyboard{
-			Rows: [][]gotdbot.InlineKeyboardButton{
-				{skipBtn, stopBtn, unmuteBtn},
-				{CloseBtn},
-			},
-		}
-
+		row1 = []gotdbot.InlineKeyboardButton{skipBtn, stopBtn, unmuteBtn}
 	case "unmute":
-		return &gotdbot.ReplyMarkupInlineKeyboard{
-			Rows: [][]gotdbot.InlineKeyboardButton{
-				{skipBtn, stopBtn, muteBtn},
-				{CloseBtn},
-			},
-		}
-
+		row1 = []gotdbot.InlineKeyboardButton{skipBtn, stopBtn, muteBtn}
 	default:
-		return &gotdbot.ReplyMarkupInlineKeyboard{
-			Rows: [][]gotdbot.InlineKeyboardButton{
-				{CloseBtn},
-			},
-		}
+		row1 = []gotdbot.InlineKeyboardButton{CloseBtn}
+	}
+
+	row2 := []gotdbot.InlineKeyboardButton{AddMeButton(username)}
+	row3 := []gotdbot.InlineKeyboardButton{CloseBtn}
+
+	return &gotdbot.ReplyMarkupInlineKeyboard{
+		Rows: [][]gotdbot.InlineKeyboardButton{
+			row1,
+			row2,
+			row3,
+		},
 	}
 }
 
@@ -220,10 +212,10 @@ func PlayNowButton(trackID string) gotdbot.InlineKeyboardButton {
 	return cb("Play Now", fmt.Sprintf("play_now_%s", trackID), gotdbot.ButtonStyleDanger{})
 }
 
-func QueueMarkup(trackID string) *gotdbot.ReplyMarkupInlineKeyboard {
+func QueueMarkup(username string) *gotdbot.ReplyMarkupInlineKeyboard {
 	return &gotdbot.ReplyMarkupInlineKeyboard{
 		Rows: [][]gotdbot.InlineKeyboardButton{
-			{PlayNowButton(trackID), CloseBtn},
+			{AddMeShortButton(username), CloseBtn},
 		},
 	}
 }
