@@ -45,7 +45,7 @@ func url(text, link string, style gotdbot.ButtonStyle) gotdbot.InlineKeyboardBut
 }
 
 var CloseBtn = cb("Close", "vcplay_close", gotdbot.ButtonStyleDanger{})
-var HomeBtn = cb("Home", "help_back", gotdbot.ButtonStylePrimary{})
+var HomeBtn = cb("Back", "help_back", gotdbot.ButtonStylePrimary{})
 var BackBtn = cb("Back", "help_all", gotdbot.ButtonStylePrimary{})
 var HelpBtn = cb("Help And Commands", "help_all", gotdbot.ButtonStyleDefault{})
 var UserBtn = cb("Users", "help_user", gotdbot.ButtonStyleDefault{})
@@ -216,11 +216,13 @@ func AddMeMarkup(username string) *gotdbot.ReplyMarkupInlineKeyboard {
     }
 
     if config.OwnerUsername != "" {
-        rows = append(rows, []gotdbot.InlineKeyboardButton{ownerBtn})
+        rows = append(rows, []gotdbot.InlineKeyboardButton{ownerBtn, groupBtn})
+    } else {
+        rows = append(rows, []gotdbot.InlineKeyboardButton{groupBtn})
     }
 
     rows = append(rows,
-        []gotdbot.InlineKeyboardButton{channelBtn, groupBtn},
+        []gotdbot.InlineKeyboardButton{channelBtn},
     )
 
     return &gotdbot.ReplyMarkupInlineKeyboard{
