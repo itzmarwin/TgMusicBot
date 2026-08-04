@@ -6,289 +6,483 @@
  *  See https://github.com/AshokShau/TgMusicBot
  */
 
-package vc
-
-/*
-#cgo linux LDFLAGS: -L . -lntgcalls -lm -lz
-#cgo darwin LDFLAGS: -L . -lntgcalls -lc++ -lz -lbz2 -liconv -framework AVFoundation -framework AudioToolbox -framework CoreAudio -framework QuartzCore -framework CoreMedia -framework VideoToolbox -framework AppKit -framework Metal -framework MetalKit -framework OpenGL -framework IOSurface -framework ScreenCaptureKit
-
-// Currently is supported only dynamically linked library on Windows due to
-// https://github.com/golang/go/issues/63903
-#cgo windows LDFLAGS: -L. -lntgcalls
-#include "ntgcalls/ntgcalls.h"
-#include "glibc_compatibility.h"
-*/
-import "C"
+package handlers
 
 import (
 	"ashokshau/tgmusic/config"
 	"ashokshau/tgmusic/src/core"
 	"ashokshau/tgmusic/src/core/cache"
 	"ashokshau/tgmusic/src/core/db"
-	"ashokshau/tgmusic/src/utils"
-	"ashokshau/tgmusic/src/vc/ntgcalls"
-	"context"
-	"crypto/rand"
-	"errors"
+	"ashokshau/tgmusic/src/core/dl"
+	"ashokshau/tgmusic/src/vc"
 	"fmt"
 	"html"
-	"log/slog"
-	"math/big"
-	"os"
 	"strings"
+
+	"ashokshau/tgmusic/src/utils"
 
 	td "github.com/AshokShau/gotdbot"
 )
 
-// getClientIndex selects an assistant client index (0-based) for a given chat.
-func (c *TelegramCalls) getClientIndex(chatID int64) (int, error) {
-	c.mu.RLock()
-	totalClients := len(c.assistants)
-	c.mu.RUnlock()
-
-	if totalClients == 0 {
-		return -1, fmt.Errorf("no clients are available")
+// playHandler handles the /play command.
+func playHandler(c *td.Client, m *td.Message) error {
+	if !playMode(c, m) {
+		return td.EndGroups
 	}
 
-	assignedIndex, err := db.Instance.GetAssistant(chatID)
-	if err != nil {
-		slog.Info("[TelegramCalls] DB.GetAssistant error", "error", err)
-		assignedIndex = -1
-	}
-
-	if assignedIndex >= 0 && assignedIndex < totalClients {
-		return assignedIndex, nil
-	}
-
-	n, err := rand.Int(rand.Reader, big.NewInt(int64(totalClients)))
-	if err != nil {
-		slog.Info("[TelegramCalls] Could not generate a random number", "error", err)
-		newClientIndex := 0
-		if assignedIndex == -1 && chatID != 0 {
-			if _, err := db.Instance.AssignAssistant(chatID, newClientIndex); err != nil {
-				logger.Info("[TelegramCalls] DB.AssignAssistant error", "error", err)
-			}
-		}
-		return newClientIndex, nil
-	}
-
-	newClientIndex := int(n.Int64())
-	if chatID != 0 {
-		if _, err := db.Instance.AssignAssistant(chatID, newClientIndex); err != nil {
-			logger.Info("[TelegramCalls] DB.AssignAssistant error", "error", err)
-		}
-	}
-
-	return newClientIndex, nil
+	return handlePlay(c, m, false, false)
 }
 
-// GetGroupAssistant retrieves the assistant and its index for a given chat.
-func (c *TelegramCalls) GetGroupAssistant(chatID int64) (*Assistant, int, error) {
-	clientIndex, err := c.getClientIndex(chatID)
-	if err != nil {
-		return nil, -1, err
+// vPlayHandler handles the /vplay command.
+func vPlayHandler(c *td.Client, m *td.Message) error {
+	if !playMode(c, m) {
+		return td.EndGroups
 	}
 
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-
-	call, ok := c.assistants[clientIndex]
-	if !ok {
-		return nil, -1, fmt.Errorf("no ntgcalls instance was found for client index %d", clientIndex)
+	if !config.EnableVideoPlayback {
+		_, _ = m.ReplyText(c, "🎥 Video playback is currently disabled.\n\nAs more people use the bot, video streaming can sometimes cause lag and reduce music quality in voice chats. To ensure a smooth listening experience for everyone, this feature has been turned off for now.\n\nThanks for your support and understanding ❤️", nil)
+		return td.EndGroups
 	}
-	return call, clientIndex, nil
+	return handlePlay(c, m, true, false)
 }
 
-// playSong downloads and plays a single song. It sends a message to the chat to indicate the download status
-// and updates it with the song's information once playback begins.
-func (c *TelegramCalls) playSong(bot *td.Client, chatID int64, song *utils.CachedTrack) error {
-	reply, err := bot.SendTextMessage(chatID, fmt.Sprintf("Downloading %s...", song.Name), nil)
+// fPlayHandler handles the /fplay command.
+func fPlayHandler(c *td.Client, m *td.Message) error {
+	if !adminMode(c, m) {
+		return td.EndGroups
+	}
+
+	return handlePlay(c, m, false, true)
+}
+
+// fVPlayHandler handles the /fvplay command.
+func fVPlayHandler(c *td.Client, m *td.Message) error {
+	if !adminMode(c, m) {
+		return td.EndGroups
+	}
+
+	if !config.EnableVideoPlayback {
+		_, _ = m.ReplyText(c, "🎥 Video playback is currently disabled.\n\nAs more people use the bot, video streaming can sometimes cause lag and reduce music quality in voice chats. To ensure a smooth listening experience for everyone, this feature has been turned off for now.\n\nThanks for your support and understanding ❤️", nil)
+		return td.EndGroups
+	}
+	return handlePlay(c, m, true, true)
+}
+
+func handlePlay(c *td.Client, m *td.Message, isVideo bool, force bool) error {
+	chatID := m.ChatId
+
+	if queueLen := cache.ChatCache.GetQueueLength(chatID); queueLen > 10 {
+		_, _ = m.ReplyText(c, "Queue is full (max 10 tracks). Use /end to clear.", nil)
+		return td.EndGroups
+	}
+
+	isReply := m.ReplyToMessageID() != 0
+	args := Args(m)
+	url := getUrl(c, m, isReply)
+
+	rMsg := m
+	var err error
+	if isReply && args == "" && url == "" {
+		r, err := m.GetRepliedMessage(c)
+		if err == nil && r != nil {
+			args = r.Text()
+		}
+	}
+
+	input := coalesce(url, args)
+
+	if strings.HasPrefix(input, "tgpl_") {
+		playlist, err := db.Instance.GetPlaylist(input)
+		if err != nil {
+			_, err = m.ReplyText(c, "❌ Playlist not found.", nil)
+			return err
+		}
+
+		tracks := db.ConvertSongsToTracks(playlist.Songs)
+		if len(tracks) == 0 {
+			_, err = m.ReplyText(c, "❌ Playlist is empty.", nil)
+			return err
+		}
+
+		updater, err := m.ReplyText(c, "🔍 Searching playlist...", nil)
+		if err != nil {
+			c.Logger.Warn("failed to send message", "error", err)
+			return td.EndGroups
+		}
+
+		return handleMultipleTracks(c, m, updater, tracks, chatID, isVideo, force)
+	}
+
+	if match := utils.TelegramMessageRegex.FindStringSubmatch(input); match != nil {
+		rMsg, err = utils.GetMessage(c, input)
+		if err != nil {
+			c.Logger.Warn("failed to parse message", "error", err.Error())
+			_, err = m.ReplyText(c, "Invalid Telegram link.", nil)
+			return err
+		}
+	} else if isReply {
+		rMsg, err = m.GetRepliedMessage(c)
+		if err != nil {
+			_, err = m.ReplyText(c, "Invalid reply message.", nil)
+			return err
+		}
+	}
+
+	if isValid := isValidMedia(rMsg); isValid {
+		isReply = true
+	}
+
+	if url == "" && args == "" && (!isReply || !isValidMedia(rMsg)) {
+		_, _ = m.ReplyText(c, "<b>Usage:</b>\n\n/play attention", &td.SendTextMessageOpts{ParseMode: "HTML"})
+		return td.EndGroups
+	}
+
+	updater, err := m.ReplyText(c, "𝖯𝗋𝗈𝖼𝖾𝗌𝗌𝗂𝗇𝗀 𝖸𝗈𝗎𝗋 𝖰𝗎𝖾𝗋𝗒 ... 𝖧𝗈𝗅𝖽 𝖮𝗇 !", nil)
 	if err != nil {
-		slog.Info("[playSong] Failed to send message", "error", err)
+		c.Logger.Warn("failed to send message", "error", err)
+		return td.EndGroups
+	}
+
+	if isReply && isValidMedia(rMsg) {
+		return handleMedia(c, m, updater, rMsg, chatID, isVideo, force)
+	}
+
+	wrapper := dl.NewDownloaderWrapper(input)
+	if url != "" {
+		if !wrapper.IsValid() {
+			_, _ = updater.EditText(c, "Invalid URL or unsupported platform.\n\n<b>Supported Platforms:</b>\n- YouTube\n- Spotify\n- JioSaavn\n- Apple Music", &td.EditTextMessageOpts{ReplyMarkup: core.SupportKeyboard(), ParseMode: "HTML"})
+			return td.EndGroups
+		}
+
+		trackInfo, err := wrapper.GetInfo()
+		if err != nil {
+			_, _ = updater.EditText(c, fmt.Sprintf("❌ Error fetching track info: %s", err.Error()), nil)
+			return td.EndGroups
+		}
+
+		if trackInfo.Results == nil || len(trackInfo.Results) == 0 {
+			_, _ = updater.EditText(c, "No tracks found.", nil)
+			return td.EndGroups
+		}
+
+		return handleUrl(c, m, updater, trackInfo, chatID, isVideo, force)
+	}
+
+	return handleTextSearch(c, m, updater, wrapper, chatID, isVideo, force)
+}
+
+// handleMedia handles playing media from a message.
+func handleMedia(c *td.Client, m *td.Message, updater *td.Message, dlMsg *td.Message, chatId int64, isVideo bool, force bool) error {
+	file, fileName := getFile(dlMsg)
+	if file == nil {
+		_, err := updater.EditText(c, "No valid media found in the message.", nil)
 		return err
 	}
 
-	if err = c.downloadAndPrepareSong(bot, song, reply); err != nil {
-		return c.PlayNext(bot, chatID)
-	}
-
-	if err = c.PlayMedia(bot, chatID, song.FilePath, song.IsVideo, ""); err != nil {
-		_, _ = reply.EditText(bot, err.Error(), &td.EditTextMessageOpts{ParseMode: "HTML", DisableWebPagePreview: true})
+	if file.Size > config.MaxFileSize {
+		_, err := updater.EditText(c, fmt.Sprintf("File too large. Max size: %d MB.", config.MaxFileSize/(1024*1024)), nil)
+		if err != nil {
+			c.Logger.Warn("Edit message failed", "error", err)
+		}
 		return nil
 	}
 
-	if song.Duration == 0 {
-		song.Duration = utils.GetMediaDuration(song.FilePath)
+	fileId := dlMsg.RemoteFileID()
+	if _track := cache.ChatCache.GetTrackIfExists(chatId, fileId); _track != nil {
+		_, err := updater.EditText(c, "Track already in queue or playing.", nil)
+		return err
 	}
 
-	text := fmt.Sprintf(
-		"<u><b>| Started streaming</b></u>\n\n<b>Title:</b> <a href='%s'>%s</a>\n\n<b>Duration:</b> %s min\n<b>Requested by:</b> %s",
-		html.EscapeString(song.URL),
-		html.EscapeString(song.Name),
-		utils.SecToMin(song.Duration),
-		html.EscapeString(song.User),
+	dur := utils.GetFileDur(dlMsg)
+	link, err := dlMsg.GetLink(c)
+	if err != nil {
+		c.Logger.Warn("Failed to get file link", "error", err)
+		link.Link = ""
+	}
+
+	saveCache := utils.CachedTrack{
+		URL: link.Link, Name: fileName, User: firstName(c, m), TrackID: fileId,
+		Duration: dur, IsVideo: isVideo, Platform: utils.Telegram,
+	}
+
+	var qLen int
+	if force {
+		qLen = cache.ChatCache.AddSongToFront(chatId, &saveCache)
+	} else {
+		qLen = cache.ChatCache.AddSong(chatId, &saveCache)
+	}
+
+	if qLen > 1 {
+		if force {
+			_ = vc.Calls.PlayNext(c, chatId)
+			_ = c.DeleteMessages(chatId, []int64{updater.Id}, &td.DeleteMessagesOpts{Revoke: true})
+			return nil
+		}
+		escURL := html.EscapeString(saveCache.URL)
+		escName := html.EscapeString(saveCache.Name)
+		escUser := html.EscapeString(saveCache.User)
+		queueInfo := fmt.Sprintf(
+			"<b>➲ 𝖠𝖽𝖽𝖾𝖽 𝖳𝗈 𝖰𝗎𝖾𝗎𝖾 𝖠𝗍 #%d</b>\n\n‣ <b>𝖳𝗂𝗍𝗅𝖾</b> : <a href='%s'>%s</a>\n‣ <b>𝖣𝗎𝗋𝖺𝗍𝗂𝗈𝗇</b> : %s 𝖬𝗂𝗇𝗎𝗍𝖾𝗌\n‣ <b>𝖱𝖾𝗊𝗎𝖾𝗌𝗍𝖾𝖽 𝖡𝗒</b> : %s",
+			qLen, escURL, escName, utils.SecToMin(saveCache.Duration), escUser,
+		)
+		_, err := updater.EditText(c, queueInfo, &td.EditTextMessageOpts{ReplyMarkup: core.QueueMarkup(c, saveCache.TrackID), ParseMode: "HTML", DisableWebPagePreview: true})
+		return err
+	}
+
+	file, err = dlMsg.Download(c, 1, 0, 0, true)
+	if err != nil {
+		cache.ChatCache.RemoveCurrentSong(chatId)
+		_, err = updater.EditText(c, fmt.Sprintf("Download failed: %s", err.Error()), nil)
+		return err
+	}
+
+	filePath := file.Local.Path
+	if dur == 0 {
+		dur = utils.GetMediaDuration(filePath)
+		saveCache.Duration = dur
+	}
+
+	saveCache.FilePath = filePath
+
+	if err = vc.Calls.PlayMedia(c, chatId, saveCache.FilePath, saveCache.IsVideo, ""); err != nil {
+		cache.ChatCache.RemoveCurrentSong(chatId)
+		_, err = updater.EditText(c, err.Error(), &td.EditTextMessageOpts{ParseMode: "HTML", DisableWebPagePreview: true})
+		return err
+	}
+
+	escURL := html.EscapeString(saveCache.URL)
+	escName := html.EscapeString(saveCache.Name)
+	escUser := html.EscapeString(saveCache.User)
+
+	nowPlaying := fmt.Sprintf(
+		"<b>➜ 𝖲𝗍𝖺𝗋𝗍𝖾𝖽 𝖲𝗍𝗋𝖾𝖺𝗆𝗂𝗇𝗀 |</b>\n\n‣ <b>𝖳𝗂𝗍𝗅𝖾</b> : <a href='%s'>%s</a>\n‣ <b>𝖣𝗎𝗋𝖺𝗍𝗂𝗈𝗇</b> : %s 𝖬𝗂𝗇𝗎𝗍𝖾𝗌\n‣ <b>𝖱𝖾𝗊𝗎𝖾𝗌𝗍𝖾𝖽 𝖡𝗒</b> : %s",
+		escURL, escName, utils.SecToMin(saveCache.Duration), escUser,
 	)
 
-	_, err = reply.EditText(bot, text, &td.EditTextMessageOpts{
-		ReplyMarkup:           core.ControlButtons(bot, "play"),
+	_, err = updater.EditText(c, nowPlaying, &td.EditTextMessageOpts{
+		ParseMode:             "HTML",
+		ReplyMarkup:           core.ControlButtons(c, "play"),
+		DisableWebPagePreview: true,
+	})
+
+	return err
+}
+
+// handleTextSearch handles a text search for a song.
+func handleTextSearch(c *td.Client, m *td.Message, updater *td.Message, wrapper *dl.DownloaderWrapper, chatId int64, isVideo bool, force bool) error {
+	searchResult, err := wrapper.Search()
+	if err != nil {
+		_, err = updater.EditText(c, fmt.Sprintf("❌ Search failed: %s", err.Error()), nil)
+		return err
+	}
+
+	if searchResult.Results == nil || len(searchResult.Results) == 0 {
+		_, err = updater.EditText(c, "😕 No results found. Try a different query.", nil)
+		return err
+	}
+
+	song := searchResult.Results[0]
+	if _track := cache.ChatCache.GetTrackIfExists(chatId, song.Id); _track != nil {
+		_, err := updater.EditText(c, "Track already in queue or playing.", nil)
+		return err
+	}
+
+	return handleSingleTrack(c, m, updater, song, "", chatId, isVideo, force)
+}
+
+// handleUrl handles a URL search for a song.
+func handleUrl(c *td.Client, m *td.Message, updater *td.Message, trackInfo utils.PlatformTracks, chatId int64, isVideo bool, force bool) error {
+	if len(trackInfo.Results) == 1 {
+		track := trackInfo.Results[0]
+		if _track := cache.ChatCache.GetTrackIfExists(chatId, track.Id); _track != nil {
+			_, err := updater.EditText(c, "Track already in queue or playing.", nil)
+			return err
+		}
+		return handleSingleTrack(c, m, updater, track, "", chatId, isVideo, force)
+	}
+
+	return handleMultipleTracks(c, m, updater, trackInfo.Results, chatId, isVideo, force)
+}
+
+// handleSingleTrack handles a single track.
+func handleSingleTrack(c *td.Client, m *td.Message, updater *td.Message, song utils.MusicTrack, filePath string, chatId int64, isVideo bool, force bool) error {
+	if song.Duration > int(config.SongDurationLimit) {
+		_, err := updater.EditText(c, fmt.Sprintf("Sorry, song exceeds max duration of %d minutes.", config.SongDurationLimit/60), nil)
+		return err
+	}
+
+	saveCache := utils.CachedTrack{
+		URL: song.Url, Name: song.Title, User: firstName(c, m), FilePath: filePath,
+		Thumbnail: song.Thumbnail, TrackID: song.Id, Duration: song.Duration, Channel: song.Channel, Views: song.Views,
+		IsVideo: isVideo, Platform: song.Platform,
+	}
+
+	var qLen int
+	if force {
+		qLen = cache.ChatCache.AddSongToFront(chatId, &saveCache)
+	} else {
+		qLen = cache.ChatCache.AddSong(chatId, &saveCache)
+	}
+
+	if qLen > 1 {
+		if force {
+			_ = vc.Calls.PlayNext(c, chatId)
+			_ = c.DeleteMessages(chatId, []int64{updater.Id}, &td.DeleteMessagesOpts{Revoke: true})
+			return nil
+		}
+		escURL := html.EscapeString(saveCache.URL)
+		escName := html.EscapeString(saveCache.Name)
+		escUser := html.EscapeString(saveCache.User)
+		queueInfo := fmt.Sprintf(
+			"<b>➲ 𝖠𝖽𝖽𝖾𝖽 𝖳𝗈 𝖰𝗎𝖾𝗎𝖾 𝖠𝗍 #%d</b>\n\n‣ <b>𝖳𝗂𝗍𝗅𝖾</b> : <a href='%s'>%s</a>\n‣ <b>𝖣𝗎𝗋𝖺𝗍𝗂𝗈𝗇</b> : %s 𝖬𝗂𝗇𝗎𝗍𝖾𝗌\n‣ <b>𝖱𝖾𝗊𝗎𝖾𝗌𝗍𝖾𝖽 𝖡𝗒</b> : %s",
+			qLen, escURL, escName, utils.SecToMin(saveCache.Duration), escUser,
+		)
+
+		_, err := updater.EditText(c, queueInfo, &td.EditTextMessageOpts{ReplyMarkup: core.QueueMarkup(c, saveCache.TrackID), ParseMode: "HTML", DisableWebPagePreview: true})
+		return err
+	}
+
+	if saveCache.FilePath == "" {
+		dlResult, err := dl.DownloadCachedTrack(&saveCache, c)
+		if err != nil {
+			cache.ChatCache.RemoveCurrentSong(chatId)
+			_, err = updater.EditText(c, fmt.Sprintf("Download failed: %s", err.Error()), nil)
+			return err
+		}
+
+		saveCache.FilePath = dlResult
+	}
+
+	if err := vc.Calls.PlayMedia(c, chatId, saveCache.FilePath, saveCache.IsVideo, ""); err != nil {
+		cache.ChatCache.RemoveCurrentSong(chatId)
+		_, err = updater.EditText(c, err.Error(), &td.EditTextMessageOpts{ParseMode: "HTML", DisableWebPagePreview: true})
+		return err
+	}
+
+	escURLnp := html.EscapeString(saveCache.URL)
+	escNamenp := html.EscapeString(saveCache.Name)
+	escUsernp := html.EscapeString(saveCache.User)
+
+	nowPlaying := fmt.Sprintf(
+		"<b>➜ 𝖲𝗍𝖺𝗋𝗍𝖾𝖽 𝖲𝗍𝗋𝖾𝖺𝗆𝗂𝗇𝗀 |</b>\n\n‣ <b>𝖳𝗂𝗍𝗅𝖾</b> : <a href='%s'>%s</a>\n‣ <b>𝖣𝗎𝗋𝖺𝗍𝗂𝗈𝗇</b> : %s 𝖬𝗂𝗇𝗎𝗍𝖾𝗌\n‣ <b>𝖱𝖾𝗊𝗎𝖾𝗌𝗍𝖾𝖽 𝖡𝗒</b> : %s",
+		escURLnp, escNamenp, utils.SecToMin(song.Duration), escUsernp,
+	)
+
+	_, err := updater.EditText(c, nowPlaying, &td.EditTextMessageOpts{
+		ReplyMarkup:           core.ControlButtons(c, "play"),
 		ParseMode:             "HTML",
 		DisableWebPagePreview: true,
 	})
 
 	if err != nil {
-		slog.Info("[playSong] Failed to edit message", "error", err)
-		return nil
-	}
-
-	return nil
-}
-
-// Stop halts media playback in a voice chat and clears the chat's cache.
-func (c *TelegramCalls) Stop(chatId int64, banned bool) error {
-	call, index, err := c.GetGroupAssistant(chatId)
-	if err != nil {
+		c.Logger.Warn("Edit message failed", "error", err)
 		return err
 	}
 
-	cache.ChatCache.SetAutoplay(chatId, false)
-	cache.ChatCache.ClearChat(chatId)
-	err = call.stopCall(chatId, banned)
-	if err != nil {
-		if strings.Contains(err.Error(), "not found") {
-			return nil
-		}
-
-		slog.Info("[Stop] Failed to stop the call", "error", err, "index", index)
-		return fmt.Errorf("failed to stop call: %w", err)
-	}
 	return nil
 }
 
-// Pause temporarily stops media playback in a voice chat.
-// It returns true if the operation was successful, and an error otherwise.
-func (c *TelegramCalls) Pause(chatId int64) (bool, error) {
-	call, index, err := c.GetGroupAssistant(chatId)
-	if err != nil {
-		return false, err
+// handleMultipleTracks handles multiple tracks.
+func handleMultipleTracks(c *td.Client, m *td.Message, updater *td.Message, tracks []utils.MusicTrack, chatId int64, isVideo bool, force bool) error {
+	if len(tracks) == 0 {
+		_, err := updater.EditText(c, "No tracks found.", nil)
+		return err
 	}
 
-	res, err := call.binding.Pause(chatId)
-	if err != nil {
-		slog.Warn("[Pause] Failed to pause the call", "error", err, "index", index)
-		return res, fmt.Errorf("failed to pause: %w", err)
-	}
-	return res, err
-}
+	queueHeader := "<u><b>Added to Queue:</b></u>\n<blockquote expandable>\n"
+	var tracksToAdd []*utils.CachedTrack
+	var skippedTracks []string
 
-// Resume continues a paused media playback in a voice chat.
-func (c *TelegramCalls) Resume(chatId int64) (bool, error) {
-	call, index, err := c.GetGroupAssistant(chatId)
-	if err != nil {
-		return false, err
-	}
+	shouldPlayFirst := false
+	var firstTrack *utils.CachedTrack
 
-	res, err := call.binding.Resume(chatId)
-	if err != nil {
-		logger.Warn("Failed to resume the call", "error", err, "index", index)
-		return res, fmt.Errorf("failed to resume: %w", err)
-	}
+	for _, track := range tracks {
+		if track.Duration > int(config.SongDurationLimit) {
+			skippedTracks = append(skippedTracks, track.Title)
+			continue
+		}
 
-	return res, err
-}
-
-// Mute silences the media playback in a voice chat.
-func (c *TelegramCalls) Mute(chatId int64) (bool, error) {
-	call, index, err := c.GetGroupAssistant(chatId)
-	if err != nil {
-		return false, err
+		saveCache := &utils.CachedTrack{
+			Name: track.Title, TrackID: track.Id, Duration: track.Duration,
+			Thumbnail: track.Thumbnail, User: firstName(c, m), Platform: track.Platform,
+			IsVideo: isVideo, URL: track.Url, Channel: track.Channel, Views: track.Views,
+		}
+		tracksToAdd = append(tracksToAdd, saveCache)
 	}
 
-	res, err := call.binding.Mute(chatId)
-	if err != nil {
-		logger.Warn("Failed to mute the call", "error", err, "index", index)
-		return res, fmt.Errorf("failed to mute: %w", err)
+	if len(tracksToAdd) == 0 {
+		if len(skippedTracks) > 0 {
+			_, err := updater.EditText(c, fmt.Sprintf("All tracks were skipped (max duration %d min).", config.SongDurationLimit/60), nil)
+			return err
+		}
+		_, err := updater.EditText(c, "No valid tracks found.", nil)
+		return err
 	}
 
-	return res, err
-}
+	var qLenAfter int
+	var startLen int
 
-// Unmute restores the audio of a muted media playback in a voice chat.
-func (c *TelegramCalls) Unmute(chatId int64) (bool, error) {
-	call, index, err := c.GetGroupAssistant(chatId)
-	if err != nil {
-		return false, err
-	}
-
-	res, err := call.binding.UnMute(chatId)
-	if err != nil {
-		logger.Warn("Failed to unmute the call", "error", err, "index", index)
-		return res, fmt.Errorf("failed to unmute: %w", err)
-	}
-
-	return res, err
-}
-
-// PlayedTime retrieves the elapsed time of the current playback in a voice chat.
-func (c *TelegramCalls) PlayedTime(chatId int64) (uint64, error) {
-	call, index, err := c.GetGroupAssistant(chatId)
-	if err != nil {
-		return 0, err
-	}
-
-	_time, err := call.binding.Time(chatId, 0)
-	if err != nil {
-		logger.Warn("Failed to get played time", "error", err, "index", index)
-		return 0, fmt.Errorf("failed to get played time: %w", err)
-	}
-
-	return _time, nil
-}
-
-// SeekStream jumps to a specific time in the current media stream.
-func (c *TelegramCalls) SeekStream(bot *td.Client, chatID int64, filePath string, toSeek, duration int, isVideo bool) error {
-	if toSeek < 0 || duration <= 0 {
-		return errors.New("invalid seek position or duration. The position must be positive and the duration must be greater than 0")
-	}
-
-	isURL := urlRegex.MatchString(filePath)
-	_, err := os.Stat(filePath)
-	isFile := err == nil
-
-	var ffmpegParams string
-	if isURL || !isFile {
-		ffmpegParams = fmt.Sprintf("-ss %d -i %s -to %d", toSeek, filePath, duration)
+	if force {
+		qLenAfter = 0
+		for i := len(tracksToAdd) - 1; i >= 0; i-- {
+			qLenAfter = cache.ChatCache.AddSongToFront(chatId, tracksToAdd[i])
+		}
+		startLen = qLenAfter - len(tracksToAdd)
+		if startLen > 0 {
+			_ = vc.Calls.PlayNext(c, chatId)
+			_ = c.DeleteMessages(chatId, []int64{updater.Id}, &td.DeleteMessagesOpts{Revoke: true})
+			return nil
+		}
 	} else {
-		ffmpegParams = fmt.Sprintf("-ss %d -to %d", toSeek, duration)
+		qLenAfter = cache.ChatCache.AddSongs(chatId, tracksToAdd)
+		startLen = qLenAfter - len(tracksToAdd)
 	}
 
-	return c.PlayMedia(bot, chatID, filePath, isVideo, ffmpegParams)
-}
-
-// RegisterHandlers sets up the event handlers for the voice call client.
-func (c *TelegramCalls) RegisterHandlers(client *td.Client) {
-	c.startAutoLeave(context.Background(), client)
-
-	for _, call := range c.assistants {
-		call.OnStreamEnd(func(chatID int64, streamType ntgcalls.StreamType, device ntgcalls.StreamDevice) {
-			if streamType == ntgcalls.VideoStream {
-				return
-			}
-
-			if err := c.PlayNext(client, chatID); err != nil {
-				call.App.Logger.Warnf("[OnStreamEnd] Failed to play the song: %v", err)
-			}
-		})
-
-		go func() {
-			_, err := call.App.SendMessage(client.Me.Usernames.EditableUsername, "/start")
-			if err != nil {
-				call.App.Logger.Warnf("failed to start bot: %v", err)
-			}
-
-			_, err = call.App.SendMessage(config.LoggerId, "Userbot started.")
-			if err != nil {
-				call.App.Logger.Warnf("Failed to send message: %v", err)
-			}
-		}()
+	if startLen == 0 {
+		shouldPlayFirst = true
+		firstTrack = tracksToAdd[0]
+		firstTrack.Loop = 1
 	}
+
+	var sb strings.Builder
+	sb.WriteString(queueHeader)
+
+	totalDuration := 0
+	for i, track := range tracksToAdd {
+		currentQLen := startLen + i + 1
+		escTrackName := html.EscapeString(track.Name)
+		fmt.Fprintf(&sb, "<b>%d.</b> %s\n└ Duration: %s\n",
+			currentQLen, escTrackName, utils.SecToMin(track.Duration))
+		totalDuration += track.Duration
+	}
+
+	sb.WriteString("</blockquote>")
+	escRequester := html.EscapeString(firstName(c, m))
+	queueSummary := fmt.Sprintf(
+		"\n<b>Queue Total:</b> %d\n<b>Duration:</b> %s min\n<b>Requested by:</b> %s",
+		qLenAfter, utils.SecToMin(totalDuration), escRequester,
+	)
+
+	sb.WriteString(queueSummary)
+	if len(skippedTracks) > 0 {
+		fmt.Fprintf(&sb, "\n\n<b>Skipped %d tracks</b> (exceeded duration limit).", len(skippedTracks))
+	}
+
+	fullMessage := sb.String()
+
+	if len(fullMessage) > 4096 {
+		fullMessage = queueSummary
+	}
+
+	if shouldPlayFirst && firstTrack != nil {
+		_ = vc.Calls.PlayNext(c, chatId)
+	}
+
+	_, err := updater.EditText(c, fullMessage, &td.EditTextMessageOpts{
+		ParseMode:             "HTML",
+		ReplyMarkup:           core.QueueMarkup(c, tracksToAdd[0].TrackID),
+		DisableWebPagePreview: true,
+	})
+
+	return err
 }
