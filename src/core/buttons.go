@@ -16,8 +16,6 @@ import (
 	"github.com/AshokShau/gotdbot"
 )
 
-var BotUsername string
-
 func cb(text, data string, style gotdbot.ButtonStyle) gotdbot.InlineKeyboardButton {
 	return gotdbot.InlineKeyboardButton{
 		Text: text,
@@ -44,14 +42,6 @@ func url(text, link string, style gotdbot.ButtonStyle) gotdbot.InlineKeyboardBut
 		},
 		Style: style,
 	}
-}
-
-func groupAddButton(text string) gotdbot.InlineKeyboardButton {
-	return url(
-		text,
-		fmt.Sprintf("https://t.me/%s?startgroup=true", BotUsername),
-		gotdbot.ButtonStylePrimary{},
-	)
 }
 
 var CloseBtn = cb("Close", "vcplay_close", gotdbot.ButtonStyleDanger{})
@@ -164,7 +154,6 @@ func ControlButtons(mode string) *gotdbot.ReplyMarkupInlineKeyboard {
 			Rows: [][]gotdbot.InlineKeyboardButton{
 				{skipBtn, stopBtn, pauseBtn},
 				{addToPlaylistBtn, CloseBtn},
-				{groupAddButton("➕ Add Me In Your Group")},
 			},
 		}
 
@@ -235,7 +224,6 @@ func QueueMarkup(trackID string) *gotdbot.ReplyMarkupInlineKeyboard {
 	return &gotdbot.ReplyMarkupInlineKeyboard{
 		Rows: [][]gotdbot.InlineKeyboardButton{
 			{PlayNowButton(trackID), CloseBtn},
-			{groupAddButton("➕ Add Me")},
 		},
 	}
 }
