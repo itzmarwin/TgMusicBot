@@ -122,7 +122,7 @@ func (c *TelegramCalls) playSong(bot *td.Client, chatID int64, song *utils.Cache
     }
 
     text := fmt.Sprintf(
-        "➜ 𝖲𝗍𝖺𝗋𝗍𝖾𝖽 𝖲𝗍𝗋𝖾𝖺𝗆𝗂𝗇𝗍 |\n\n‣ 𝖳𝗂𝗍𝗅𝖾 : <a href='%s'>%s</a>\n‣ 𝖣𝗎𝗋𝖺𝗍𝗂𝗈𝗇 : %s 𝖬𝗂𝗇𝗎𝗍𝖾𝗌\n‣ 𝖱𝖾𝗊𝗎𝖾𝗌𝗍𝖾𝖽 𝖡𝗒 : %s",
+        "<b>➜ Started Streaming |</b>\n\n<b>‣ Title</b> : <a href='%s'>%s</a>\n<b>‣ Duration</b> : %s Minutes\n<b>‣ Requested By</b> : %s",
         html.EscapeString(song.URL),
         html.EscapeString(song.Name),
         utils.SecToMin(song.Duration),
