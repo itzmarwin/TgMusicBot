@@ -24,8 +24,6 @@ import (
     td "github.com/AshokShau/gotdbot"
 )
 
-// editUpdater is a thin passthrough to Message.EditText, kept as a named wrapper so
-// intermediate status/error edits on "updater" read consistently with finalizeUpdater below.
 func editUpdater(c *td.Client, updater *td.Message, text string, opts *td.EditTextMessageOpts) (*td.Message, error) {
     return updater.EditText(c, text, opts)
 }
@@ -52,8 +50,6 @@ func finalizeUpdater(c *td.Client, chatId int64, updater *td.Message, text strin
         return edited, nil
     }
 
-    // Fallback: EditMedia rejected the text->photo conversion. Delete the stuck status
-    // message and send the final result as a fresh photo message instead.
     c.Logger.Warn("EditMedia (text->photo) failed, falling back to delete+resend", "error", err)
     _ = c.DeleteMessages(chatId, []int64{updater.Id}, &td.DeleteMessagesOpts{Revoke: true})
 
@@ -266,10 +262,10 @@ func handleMedia(c *td.Client, m *td.Message, updater *td.Message, dlMsg *td.Mes
         escUser := html.EscapeString(saveCache.User)
         // Queue message changed
         queueInfo := fmt.Sprintf(
-            "➲ 𝖠𝖽𝖽𝖾𝖽 𝖳𝗈 𝖰𝗎𝖾𝗎𝖾 𝖠𝗍 #%d\n\n‣ 𝖳𝗂𝗍𝗅𝖾 : <a href='%s'>%s</a>\n‣ 𝖣𝗎𝗋𝖺𝗍𝗂𝗈𝗇 : %s 𝖬𝗂𝗇𝗎𝗍𝖾𝗌\n‣ 𝖱𝖾𝗊𝗎𝖾𝗌𝗍𝖾𝖽 𝖡𝗒 : %s",
+            "<b>➲ Added To Queue At #%d</b>\n\n<b>‣ Title</b> : <a href='%s'>%s</a>\n<b>‣ Duration</b> : %s Minutes\n<b>‣ Requested By</b> : %s",
             qLen, escURL, escName, utils.SecToMin(saveCache.Duration), escUser,
         )
-        _, err := finalizeUpdater(c, chatId, updater, queueInfo, &td.EditCaptionOpts{ReplyMarkup: core.QueueMarkup(saveCache.TrackID), ParseMode: "HTML"})
+        _, err := editUpdater(c, updater, queueInfo, &td.EditTextMessageOpts{ReplyMarkup: core.QueueMarkup(saveCache.TrackID), ParseMode: "HTML"})
         return err
     }
 
@@ -300,7 +296,7 @@ func handleMedia(c *td.Client, m *td.Message, updater *td.Message, dlMsg *td.Mes
 
     // Play message changed
     nowPlaying := fmt.Sprintf(
-        "➜ 𝖲𝗍𝖺𝗋𝗍𝖾𝖽 𝖲𝗍𝗋𝖾𝖺𝗆𝗂𝗇𝗍 |\n\n‣ 𝖳𝗂𝗍𝗅𝖾 : <a href='%s'>%s</a>\n‣ 𝖣𝗎𝗋𝖺𝗍𝗂𝗈𝗇 : %s 𝖬𝗂𝗇𝗎𝗍𝖾𝗌\n‣ 𝖱𝖾𝗊𝗎𝖾𝗌𝗍𝖾𝖽 𝖡𝗒 : %s",
+        "<b>➜ Started Streaming |</b>\n\n<b>‣ Title</b> : <a href='%s'>%s</a>\n<b>‣ Duration</b> : %s Minutes\n<b>‣ Requested By</b> : %s",
         escURL, escName, utils.SecToMin(saveCache.Duration), escUser,
     )
 
@@ -379,11 +375,11 @@ func handleSingleTrack(c *td.Client, m *td.Message, updater *td.Message, song ut
         escUser := html.EscapeString(saveCache.User)
         // Queue message changed
         queueInfo := fmt.Sprintf(
-            "➲ 𝖠𝖽𝖽𝖾𝖽 𝖳𝗈 𝖰𝗎𝖾𝗎𝖾 𝖠𝗍 #%d\n\n‣ 𝖳𝗂𝗍𝗅𝖾 : <a href='%s'>%s</a>\n‣ 𝖣𝗎𝗋𝖺𝗍𝗂𝗈𝗇 : %s 𝖬𝗂𝗇𝗎𝗍𝖾𝗌\n‣ 𝖱𝖾𝗊𝗎𝖾𝗌𝗍𝖾𝖽 𝖡𝗒 : %s",
+            "<b>➲ Added To Queue At #%d</b>\n\n<b>‣ Title</b> : <a href='%s'>%s</a>\n<b>‣ Duration</b> : %s Minutes\n<b>‣ Requested By</b> : %s",
             qLen, escURL, escName, utils.SecToMin(saveCache.Duration), escUser,
         )
 
-        _, err := finalizeUpdater(c, chatId, updater, queueInfo, &td.EditCaptionOpts{ReplyMarkup: core.QueueMarkup(saveCache.TrackID), ParseMode: "HTML"})
+        _, err := editUpdater(c, updater, queueInfo, &td.EditTextMessageOpts{ReplyMarkup: core.QueueMarkup(saveCache.TrackID), ParseMode: "HTML"})
         return err
     }
 
@@ -410,7 +406,7 @@ func handleSingleTrack(c *td.Client, m *td.Message, updater *td.Message, song ut
 
     // Play message changed
     nowPlaying := fmt.Sprintf(
-        "➜ 𝖲𝗍𝖺𝗋𝗍𝖾𝖽 𝖲𝗍𝗋𝖾𝖺𝗆𝗂𝗇𝗍 |\n\n‣ 𝖳𝗂𝗍𝗅𝖾 : <a href='%s'>%s</a>\n‣ 𝖣𝗎𝗋𝖺𝗍𝗂𝗈𝗇 : %s 𝖬𝗂𝗇𝗎𝗍𝖾𝗌\n‣ 𝖱𝖾𝗊𝗎𝖾𝗌𝗍𝖾𝖽 𝖡𝗒 : %s",
+        "<b>➜ Started Streaming |</b>\n\n<b>‣ Title</b> : <a href='%s'>%s</a>\n<b>‣ Duration</b> : %s Minutes\n<b>‣ Requested By</b> : %s",
         escURLnp, escNamenp, utils.SecToMin(song.Duration), escUsernp,
     )
 
@@ -524,7 +520,7 @@ func handleMultipleTracks(c *td.Client, m *td.Message, updater *td.Message, trac
         _ = vc.Calls.PlayNext(c, chatId)
     }
 
-    _, err := finalizeUpdater(c, chatId, updater, fullMessage, &td.EditCaptionOpts{
+    _, err := editUpdater(c, updater, fullMessage, &td.EditTextMessageOpts{
         ParseMode:   "HTML",
         ReplyMarkup: core.QueueMarkup(tracksToAdd[0].TrackID),
     })
