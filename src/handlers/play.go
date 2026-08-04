@@ -225,7 +225,7 @@ func handleMedia(c *td.Client, m *td.Message, updater *td.Message, dlMsg *td.Mes
 			"➲ 𝖠𝖽𝖽𝖾𝖽 𝖳𝗈 𝖰𝗎𝖾𝗎𝖾 𝖠𝗍 #%d\n\n‣ 𝖳𝗂𝗍𝗅𝖾 : <a href='%s'>%s</a>\n‣ 𝖣𝗎𝗋𝖺𝗍𝗂𝗈𝗇 : %s Min\n‣ 𝖱𝖾𝗊𝗎𝖾𝗌𝗍𝖾𝖽 𝖡𝗒 : %s",
 			qLen, escURL, escName, utils.SecToMin(saveCache.Duration), escUser,
 		)
-		_, err := updater.EditText(c, queueInfo, &td.EditTextMessageOpts{ReplyMarkup: core.QueueMarkup(), ParseMode: "HTML", DisableWebPagePreview: true})
+		_, err := updater.EditText(c, queueInfo, &td.EditTextMessageOpts{ReplyMarkup: core.QueueMarkup(c.Me.Usernames.EditableUsername), ParseMode: "HTML", DisableWebPagePreview: true})
 		return err
 	}
 
@@ -261,7 +261,7 @@ func handleMedia(c *td.Client, m *td.Message, updater *td.Message, dlMsg *td.Mes
 
 	_, err = updater.EditText(c, nowPlaying, &td.EditTextMessageOpts{
 		ParseMode:             "HTML",
-		ReplyMarkup:           core.ControlButtons("play"),
+		ReplyMarkup:           core.ControlButtons("play", c.Me.Usernames.EditableUsername),
 		DisableWebPagePreview: true,
 	})
 
@@ -338,7 +338,7 @@ func handleSingleTrack(c *td.Client, m *td.Message, updater *td.Message, song ut
 			qLen, escURL, escName, utils.SecToMin(saveCache.Duration), escUser,
 		)
 
-		_, err := updater.EditText(c, queueInfo, &td.EditTextMessageOpts{ReplyMarkup: core.QueueMarkup(), ParseMode: "HTML", DisableWebPagePreview: true})
+		_, err := updater.EditText(c, queueInfo, &td.EditTextMessageOpts{ReplyMarkup: core.QueueMarkup(c.Me.Usernames.EditableUsername), ParseMode: "HTML", DisableWebPagePreview: true})
 		return err
 	}
 
@@ -369,7 +369,7 @@ func handleSingleTrack(c *td.Client, m *td.Message, updater *td.Message, song ut
 	)
 
 	_, err := updater.EditText(c, nowPlaying, &td.EditTextMessageOpts{
-		ReplyMarkup:           core.ControlButtons("play"),
+		ReplyMarkup:           core.ControlButtons("play", c.Me.Usernames.EditableUsername),
 		ParseMode:             "HTML",
 		DisableWebPagePreview: true,
 	})
@@ -480,7 +480,7 @@ func handleMultipleTracks(c *td.Client, m *td.Message, updater *td.Message, trac
 
 	_, err := updater.EditText(c, fullMessage, &td.EditTextMessageOpts{
 		ParseMode:             "HTML",
-		ReplyMarkup:           core.QueueMarkup(),
+		ReplyMarkup:           core.QueueMarkup(c.Me.Usernames.EditableUsername),
 		DisableWebPagePreview: true,
 	})
 
