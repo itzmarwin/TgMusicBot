@@ -45,7 +45,7 @@ func url(text, link string, style gotdbot.ButtonStyle) gotdbot.InlineKeyboardBut
 }
 
 var CloseBtn = cb("Close", "vcplay_close", gotdbot.ButtonStyleDanger{})
-var HomeBtn = cb("Home", "help_back", gotdbot.ButtonStylePrimary{})
+var BackBtn = cb("Back", "help_back", gotdbot.ButtonStylePrimary{})
 var HelpBtn = cb("Help", "help_all", gotdbot.ButtonStyleDefault{})
 var UserBtn = cb("Users", "help_user", gotdbot.ButtonStyleDefault{})
 var AdminBtn = cb("Admins", "help_admin", gotdbot.ButtonStyleDefault{})
@@ -124,7 +124,7 @@ func HelpMenuKeyboard() *gotdbot.ReplyMarkupInlineKeyboard {
         Rows: [][]gotdbot.InlineKeyboardButton{
             {UserBtn, AdminBtn, OwnerBtn},
             {PlaylistBtn, DevsBtn, AutoplayBtn},
-            {HomeBtn, CloseBtn},
+            {BackBtn, CloseBtn},
         },
     }
 }
@@ -132,8 +132,7 @@ func HelpMenuKeyboard() *gotdbot.ReplyMarkupInlineKeyboard {
 func BackHelpMenuKeyboard() *gotdbot.ReplyMarkupInlineKeyboard {
     return &gotdbot.ReplyMarkupInlineKeyboard{
         Rows: [][]gotdbot.InlineKeyboardButton{
-            {HelpBtn, HomeBtn},
-            {CloseBtn},
+            {BackBtn, CloseBtn},
         },
     }
 }
@@ -233,7 +232,6 @@ func PlayNowButton(trackID string) gotdbot.InlineKeyboardButton {
 }
 
 func QueueMarkup(trackID string) *gotdbot.ReplyMarkupInlineKeyboard {
-    // Dynamically fetching bot username from config
     addMeUrl := fmt.Sprintf("https://t.me/%s?startgroup=true", config.BotUsername)
     addMeBtn := url("Aᴅᴅ Mᴇ", addMeUrl, gotdbot.ButtonStylePrimary{})
 
