@@ -133,11 +133,11 @@ func handlePlay(c *td.Client, m *td.Message, isVideo bool, force bool) error {
 	}
 
 	if url == "" && args == "" && (!isReply || !isValidMedia(rMsg)) {
-		_, _ = m.ReplyText(c, "<b>Usage:</b>\n/play [song or URL]\n\n<b>Supported Platforms:</b>\n- YouTube\n- Spotify\n- JioSaavn\n- Apple Music", &td.SendTextMessageOpts{ReplyMarkup: core.SupportKeyboard(), ParseMode: "HTML"})
+		_, _ = m.ReplyText(c, "<b>Usage:</b>\n\n/play attention", &td.SendTextMessageOpts{ParseMode: "HTML"})
 		return td.EndGroups
 	}
 
-	updater, err := m.ReplyText(c, "🔍 Searching and downloading...", nil)
+	updater, err := m.ReplyText(c, "𝖯𝗋𝗈𝖼𝖾𝗌𝗌𝗂𝗇𝗀 𝖸𝗈𝗎𝗋 𝖰𝗎𝖾𝗋𝗒 ... 𝖧𝗈𝗅𝖽 𝖮𝗇 !", nil)
 	if err != nil {
 		c.Logger.Warn("failed to send message", "error", err)
 		return td.EndGroups
@@ -222,7 +222,7 @@ func handleMedia(c *td.Client, m *td.Message, updater *td.Message, dlMsg *td.Mes
 		escName := html.EscapeString(saveCache.Name)
 		escUser := html.EscapeString(saveCache.User)
 		queueInfo := fmt.Sprintf(
-			"<u><b>Added to queue: %d</b></u>\n\n<b>Title:</b> <a href='%s'>%s</a>\n\n<b>Duration:</b> %s min\n<b>Requested by:</b> %s",
+			"<b>➲ 𝖠𝖽𝖽𝖾𝖽 𝖳𝗈 𝖰𝗎𝖾𝗎𝖾 𝖠𝗍 #%d</b>\n\n‣ <b>𝖳𝗂𝗍𝗅𝖾</b> : <a href='%s'>%s</a>\n‣ <b>𝖣𝗎𝗋𝖺𝗍𝗂𝗈𝗇</b> : %s 𝖬𝗂𝗇𝗎𝗍𝖾𝗌\n‣ <b>𝖱𝖾𝗊𝗎𝖾𝗌𝗍𝖾𝖽 𝖡𝗒</b> : %s",
 			qLen, escURL, escName, utils.SecToMin(saveCache.Duration), escUser,
 		)
 		_, err := updater.EditText(c, queueInfo, &td.EditTextMessageOpts{ReplyMarkup: core.QueueMarkup(saveCache.TrackID), ParseMode: "HTML", DisableWebPagePreview: true})
@@ -255,7 +255,7 @@ func handleMedia(c *td.Client, m *td.Message, updater *td.Message, dlMsg *td.Mes
 	escUser := html.EscapeString(saveCache.User)
 
 	nowPlaying := fmt.Sprintf(
-		"<u><b>| Started streaming</b></u>\n\n<b>Title:</b> <a href='%s'>%s</a>\n\n<b>Duration:</b> %s min\n<b>Requested by:</b> %s",
+		"<b>➜ 𝖲𝗍𝖺𝗋𝗍𝖾𝖽 𝖲𝗍𝗋𝖾𝖺𝗆𝗂𝗇𝗀 |</b>\n\n‣ <b>𝖳𝗂𝗍𝗅𝖾</b> : <a href='%s'>%s</a>\n‣ <b>𝖣𝗎𝗋𝖺𝗍𝗂𝗈𝗇</b> : %s 𝖬𝗂𝗇𝗎𝗍𝖾𝗌\n‣ <b>𝖱𝖾𝗊𝗎𝖾𝗌𝗍𝖾𝖽 𝖡𝗒</b> : %s",
 		escURL, escName, utils.SecToMin(saveCache.Duration), escUser,
 	)
 
@@ -334,7 +334,7 @@ func handleSingleTrack(c *td.Client, m *td.Message, updater *td.Message, song ut
 		escName := html.EscapeString(saveCache.Name)
 		escUser := html.EscapeString(saveCache.User)
 		queueInfo := fmt.Sprintf(
-			"<u><b>Added to queue: %d</b></u>\n\n<b>Title:</b> <a href='%s'>%s</a>\n\n<b>Duration:</b> %s min\n<b>Requested by:</b> %s",
+			"<b>➲ 𝖠𝖽𝖽𝖾𝖽 𝖳𝗈 𝖰𝗎𝖾𝗎𝖾 𝖠𝗍 #%d</b>\n\n‣ <b>𝖳𝗂𝗍𝗅𝖾</b> : <a href='%s'>%s</a>\n‣ <b>𝖣𝗎𝗋𝖺𝗍𝗂𝗈𝗇</b> : %s 𝖬𝗂𝗇𝗎𝗍𝖾𝗌\n‣ <b>𝖱𝖾𝗊𝗎𝖾𝗌𝗍𝖾𝖽 𝖡𝗒</b> : %s",
 			qLen, escURL, escName, utils.SecToMin(saveCache.Duration), escUser,
 		)
 
@@ -364,7 +364,7 @@ func handleSingleTrack(c *td.Client, m *td.Message, updater *td.Message, song ut
 	escUsernp := html.EscapeString(saveCache.User)
 
 	nowPlaying := fmt.Sprintf(
-		"<u><b>| Started streaming</b></u>\n\n<b>Title:</b> <a href='%s'>%s</a>\n\n<b>Duration:</b> %s min\n<b>Requested by:</b> %s",
+		"<b>➜ 𝖲𝗍𝖺𝗋𝗍𝖾𝖽 𝖲𝗍𝗋𝖾𝖺𝗆𝗂𝗇𝗀 |</b>\n\n‣ <b>𝖳𝗂𝗍𝗅𝖾</b> : <a href='%s'>%s</a>\n‣ <b>𝖣𝗎𝗋𝖺𝗍𝗂𝗈𝗇</b> : %s 𝖬𝗂𝗇𝗎𝗍𝖾𝗌\n‣ <b>𝖱𝖾𝗊𝗎𝖾𝗌𝗍𝖾𝖽 𝖡𝗒</b> : %s",
 		escURLnp, escNamenp, utils.SecToMin(song.Duration), escUsernp,
 	)
 
