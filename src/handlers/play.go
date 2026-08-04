@@ -170,13 +170,11 @@ func handlePlay(c *td.Client, m *td.Message, isVideo bool, force bool) error {
 
     if url == "" && args == "" && (!isReply || !isValidMedia(rMsg)) {
         // Blank command message changed, buttons removed completely
-        _, _ = m.ReplyText(c, "<b>Usage:</b>\n<code>/play attention</code>", &td.SendTextMessageOpts{ParseMode: "HTML"})
+        _, _ = m.ReplyText(c, "<b>Usage:</b>\n\n<code>/play attention</code>", &td.SendTextMessageOpts{ParseMode: "HTML"})
         return td.EndGroups
     }
 
-    // Searching message stays plain text; image is added only when finalizeUpdater
-    // converts it into the final "now playing" / "added to queue" message.
-    updater, err := m.ReplyText(c, "𝖯𝗋𝗈𝖼𝖾𝗌𝗌𝗂𝗇𝗀 𝖸𝗈𝗎𝗋 𝖰𝗎𝖾𝗋𝗒 ... 𝖧𝗈𝗅𝖽 𝖮𝗇 !", nil)
+    updater, err := m.ReplyText(c, "<b>𝖯𝗋𝗈𝖼𝖾𝗌𝗌𝗂𝗇𝗀 𝖸𝗈𝗎𝗋 𝖰𝗎𝖾𝗋𝗒 ... 𝖧𝗈𝗅𝖽 𝖮𝗇 !</b>", nil)
     if err != nil {
         c.Logger.Warn("failed to send message", "error", err)
         return td.EndGroups
