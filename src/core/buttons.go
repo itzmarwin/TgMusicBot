@@ -54,9 +54,9 @@ var DevsBtn = cb("Devs", "help_devs", gotdbot.ButtonStyleDefault{})
 var PlaylistBtn = cb("Playlist", "help_playlist", gotdbot.ButtonStyleDefault{})
 var AutoplayBtn = cb("Autoplay", "help_autoplay", gotdbot.ButtonStyleDefault{})
 
-var SourceCodeBtn = url("Source Code", "https://github.com/AshokShau/TgMusicBot", gotdbot.ButtonStylePrimary{})
 var channelBtn = url("Updates", config.SupportChannel, gotdbot.ButtonStyleDefault{})
 var groupBtn = url("Group", config.SupportGroup, gotdbot.ButtonStyleDefault{})
+var ownerBtn = url("Owner", fmt.Sprintf("https://t.me/%s", config.OwnerUsername), gotdbot.ButtonStyleDefault{})
 
 func SupportKeyboard() *gotdbot.ReplyMarkupInlineKeyboard {
     return &gotdbot.ReplyMarkupInlineKeyboard{
@@ -133,7 +133,7 @@ func BackHelpMenuKeyboard() *gotdbot.ReplyMarkupInlineKeyboard {
     return &gotdbot.ReplyMarkupInlineKeyboard{
         Rows: [][]gotdbot.InlineKeyboardButton{
             {HelpBtn, HomeBtn},
-            {CloseBtn, SourceCodeBtn},
+            {CloseBtn},
         },
     }
 }
@@ -210,13 +210,21 @@ func AddMeMarkup(username string) *gotdbot.ReplyMarkupInlineKeyboard {
         gotdbot.ButtonStylePrimary{},
     )
 
+    rows := [][]gotdbot.InlineKeyboardButton{
+        {addMeBtn},
+        {HelpBtn},
+    }
+
+    if config.OwnerUsername != "" {
+        rows = append(rows, []gotdbot.InlineKeyboardButton{ownerBtn})
+    }
+
+    rows = append(rows,
+        []gotdbot.InlineKeyboardButton{channelBtn, groupBtn},
+    )
+
     return &gotdbot.ReplyMarkupInlineKeyboard{
-        Rows: [][]gotdbot.InlineKeyboardButton{
-            {addMeBtn},
-            {HelpBtn},
-            {channelBtn, groupBtn},
-            {SourceCodeBtn},
-        },
+        Rows: rows,
     }
 }
 
