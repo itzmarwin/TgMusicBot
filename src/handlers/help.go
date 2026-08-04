@@ -30,121 +30,81 @@ func getHelpCategories() map[string]struct {
 	}{
 		"help_user": {
 			Title: "User Commands",
-			Content: `<p>Commands available to all members of the chat.</p>
+			Content: `Commands available to all members of the chat.
 
-<details open>
-  <summary>Playback</summary>
-  <table bordered striped>
-    <tr><th>Command</th><th>Description</th></tr>
-    <tr><td><code>/play [song]</code></td><td>Play music from YouTube, Spotify, SoundCloud, and other supported platforms.</td></tr>
-    <tr><td><code>/vplay [song]</code></td><td>Play a video in the group video chat.</td></tr>
-    <tr><td><code>/fplay [song]</code></td><td>Play a track immediately, skipping the current queue.</td></tr>
-    <tr><td><code>/fvplay [song]</code></td><td>Play a video immediately, skipping the current queue.</td></tr>
-  </table>
-</details>
+<b>Playback</b>
+<b>/play</b> [song] — Play music from YouTube, Spotify, SoundCloud, and other supported platforms.
+<b>/vplay</b> [song] — Play a video in the group video chat.
+<b>/fplay</b> [song] — Play a track immediately, skipping the current queue.
+<b>/fvplay</b> [song] — Play a video immediately, skipping the current queue.
 
-<details>
-  <summary>General</summary>
-  <table bordered striped>
-    <tr><th>Command</th><th>Description</th></tr>
-    <tr><td><code>/start</code></td><td>Start the bot or verify that it is online.</td></tr>
-    <tr><td><code>/help</code></td><td>Open the interactive help menu.</td></tr>
-    <tr><td><code>/ping</code></td><td>Display the bot's response time and system information.</td></tr>
-    <tr><td><code>/privacy</code></td><td>View the bot's privacy policy.</td></tr>
-    <tr><td><code>/queue</code></td><td>Display the current playback queue.</td></tr>
-  </table>
-</details>`,
+<b>General</b>
+<b>/start</b> — Start the bot or verify that it is online.
+<b>/help</b> — Open the interactive help menu.
+<b>/ping</b> — Display the bot's response time and system information.
+<b>/privacy</b> — View the bot's privacy policy.
+<b>/queue</b> — Display the current playback queue.`,
 			Markup: core.BackHelpMenuKeyboard(),
 		},
 		"help_admin": {
 			Title: "Admin Commands",
-			Content: `<p>Commands available to chat administrators and authorized users.</p>
+			Content: `Commands available to chat administrators and authorized users.
 
-<details open>
-  <summary>Playback Control</summary>
-  <table bordered striped>
-    <tr><th>Command</th><th>Description</th></tr>
-    <tr><td><code>/skip</code></td><td>Skip the currently playing track.</td></tr>
-    <tr><td><code>/pause</code></td><td>Pause playback.</td></tr>
-    <tr><td><code>/resume</code></td><td>Resume playback.</td></tr>
-    <tr><td><code>/seek [seconds]</code></td><td>Jump to a specific position in the current track.</td></tr>
-    <tr><td><code>/mute</code></td><td>Mute the voice chat audio.</td></tr>
-    <tr><td><code>/unmute</code></td><td>Unmute the voice chat audio.</td></tr>
-  </table>
-</details>
+<b>Playback Control</b>
+<b>/skip</b> — Skip the currently playing track.
+<b>/pause</b> — Pause playback.
+<b>/resume</b> — Resume playback.
+<b>/seek</b> [seconds] — Jump to a specific position in the current track.
+<b>/mute</b> — Mute the voice chat audio.
+<b>/unmute</b> — Unmute the voice chat audio.
 
-<details>
-  <summary>Queue & Access</summary>
-  <table bordered striped>
-    <tr><th>Command</th><th>Description</th></tr>
-    <tr><td><code>/remove [index]</code></td><td>Remove a track from the queue by its position.</td></tr>
-    <tr><td><code>/loop [0-10]</code></td><td>Repeat the current track the specified number of times.</td></tr>
-    <tr><td><code>/auth</code></td><td>Authorize a user to use administrator commands.</td></tr>
-    <tr><td><code>/unauth</code></td><td>Remove a user's authorization.</td></tr>
-    <tr><td><code>/authlist</code></td><td>Show all authorized users in the current chat.</td></tr>
-  </table>
-</details>`,
+<b>Queue & Access</b>
+<b>/remove</b> [index] — Remove a track from the queue by its position.
+<b>/loop</b> [0-10] — Repeat the current track the specified number of times.
+<b>/auth</b> — Authorize a user to use administrator commands.
+<b>/unauth</b> — Remove a user's authorization.
+<b>/authlist</b> — Show all authorized users in the current chat.`,
 			Markup: core.BackHelpMenuKeyboard(),
 		},
 		"help_devs": {
 			Title: "Developer Commands",
-			Content: `<p>Commands intended for bot developers and maintainers.</p>
+			Content: `Commands intended for bot developers and maintainers.
 
-<details open>
-  <summary>System</summary>
-  <table bordered striped>
-    <tr><th>Command</th><th>Description</th></tr>
-    <tr><td><code>/stats</code></td><td>Display bot, hosting, and database statistics.</td></tr>
-    <tr><td><code>/av</code></td><td>List all active voice and video chats.</td></tr>
-    <tr><td><code>/clearass</code></td><td>Disconnect and clear all active assistant clients.</td></tr>
-    <tr><td><code>/leaveall</code></td><td>Disconnect assistants from every active chat.</td></tr>
-    <tr><td><code>/logger</code></td><td>View the current logging configuration.</td></tr>
-  </table>
-</details>`,
+<b>System</b>
+<b>/stats</b> — Display bot, hosting, and database statistics.
+<b>/av</b> — List all active voice and video chats.
+<b>/clearass</b> — Disconnect and clear all active assistant clients.
+<b>/leaveall</b> — Disconnect assistants from every active chat.
+<b>/logger</b> — View the current logging configuration.`,
 			Markup: core.BackHelpMenuKeyboard(),
 		},
 		"help_owner": {
 			Title: "Chat Owner Commands",
-			Content: `<p>Configuration options available to the chat owner.</p>
+			Content: `Configuration options available to the chat owner.
 
-<details open>
-  <summary>Chat Settings</summary>
-  <table bordered striped>
-    <tr><th>Command</th><th>Description</th></tr>
-    <tr><td><code>/settings</code></td><td>Manage chat settings, including play mode, administrator mode, command auto-delete, and language preferences.</td></tr>
-  </table>
-</details>`,
+<b>Chat Settings</b>
+<b>/settings</b> — Manage chat settings, including play mode, administrator mode, command auto-delete, and language preferences.`,
 			Markup: core.BackHelpMenuKeyboard(),
 		},
 		"help_playlist": {
 			Title: "Playlist Commands",
-			Content: `<p>Create, organize, and manage your personal playlists.</p>
+			Content: `Create, organize, and manage your personal playlists.
 
-<details open>
-  <summary>Playlist Management</summary>
-  <table bordered striped>
-    <tr><th>Command</th><th>Description</th></tr>
-    <tr><td><code>/createplaylist</code></td><td>Create a new playlist.</td></tr>
-    <tr><td><code>/deleteplaylist</code></td><td>Delete one of your playlists.</td></tr>
-    <tr><td><code>/addtoplaylist</code></td><td>Add a track to a playlist.</td></tr>
-    <tr><td><code>/removefromplaylist</code></td><td>Remove a track from a playlist.</td></tr>
-    <tr><td><code>/playlistinfo</code></td><td>Display information about a playlist.</td></tr>
-    <tr><td><code>/myplaylists</code></td><td>List all of your playlists.</td></tr>
-  </table>
-</details>`,
+<b>Playlist Management</b>
+<b>/createplaylist</b> — Create a new playlist.
+<b>/deleteplaylist</b> — Delete one of your playlists.
+<b>/addtoplaylist</b> — Add a track to a playlist.
+<b>/removefromplaylist</b> — Remove a track from a playlist.
+<b>/playlistinfo</b> — Display information about a playlist.
+<b>/myplaylists</b> — List all of your playlists.`,
 			Markup: core.BackHelpMenuKeyboard(),
 		},
 		"help_autoplay": {
 			Title: "Autoplay Commands",
-			Content: `<p>Automatically continue playback with recommended tracks.</p>
+			Content: `Automatically continue playback with recommended tracks.
 
-<details open>
-  <summary>Autoplay</summary>
-  <table bordered striped>
-    <tr><th>Command</th><th>Description</th></tr>
-    <tr><td><code>/autoplay</code></td><td>Enable or disable autoplay. When enabled, recommended tracks are automatically queued when playback ends.</td></tr>
-  </table>
-</details>`,
+<b>Autoplay</b>
+<b>/autoplay</b> — Enable or disable autoplay. When enabled, recommended tracks are automatically queued when playback ends.`,
 			Markup: core.BackHelpMenuKeyboard(),
 		},
 	}
