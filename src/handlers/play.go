@@ -219,7 +219,7 @@ func handleMedia(c *td.Client, m *td.Message, updater *td.Message, dlMsg *td.Mes
 			return nil
 		}
 		escURL := html.EscapeString(saveCache.URL)
-		escName := html.EscapeString(saveCache.Name)
+		escName := html.EscapeString(truncate(saveCache.Name, 45))
 		escUser := html.EscapeString(saveCache.User)
 		queueInfo := fmt.Sprintf(
 			"<b>➲ 𝖠𝖽𝖽𝖾𝖽 𝖳𝗈 𝖰𝗎𝖾𝗎𝖾 𝖠𝗍 #%d</b>\n\n‣ <b>𝖳𝗂𝗍𝗅𝖾</b> : <a href='%s'>%s</a>\n‣ <b>𝖣𝗎𝗋𝖺𝗍𝗂𝗈𝗇</b> : %s 𝖬𝗂𝗇𝗎𝗍𝖾𝗌\n‣ <b>𝖱𝖾𝗊𝗎𝖾𝗌𝗍𝖾𝖽 𝖡𝗒</b> : %s",
@@ -251,7 +251,7 @@ func handleMedia(c *td.Client, m *td.Message, updater *td.Message, dlMsg *td.Mes
 	}
 
 	escURL := html.EscapeString(saveCache.URL)
-	escName := html.EscapeString(saveCache.Name)
+	escName := html.EscapeString(truncate(saveCache.Name, 45))
 	escUser := html.EscapeString(saveCache.User)
 
 	nowPlaying := fmt.Sprintf(
@@ -331,7 +331,7 @@ func handleSingleTrack(c *td.Client, m *td.Message, updater *td.Message, song ut
 			return nil
 		}
 		escURL := html.EscapeString(saveCache.URL)
-		escName := html.EscapeString(saveCache.Name)
+		escName := html.EscapeString(truncate(saveCache.Name, 45))
 		escUser := html.EscapeString(saveCache.User)
 		queueInfo := fmt.Sprintf(
 			"<b>➲ 𝖠𝖽𝖽𝖾𝖽 𝖳𝗈 𝖰𝗎𝖾𝗎𝖾 𝖠𝗍 #%d</b>\n\n‣ <b>𝖳𝗂𝗍𝗅𝖾</b> : <a href='%s'>%s</a>\n‣ <b>𝖣𝗎𝗋𝖺𝗍𝗂𝗈𝗇</b> : %s 𝖬𝗂𝗇𝗎𝗍𝖾𝗌\n‣ <b>𝖱𝖾𝗊𝗎𝖾𝗌𝗍𝖾𝖽 𝖡𝗒</b> : %s",
@@ -360,7 +360,7 @@ func handleSingleTrack(c *td.Client, m *td.Message, updater *td.Message, song ut
 	}
 
 	escURLnp := html.EscapeString(saveCache.URL)
-	escNamenp := html.EscapeString(saveCache.Name)
+	escNamenp := html.EscapeString(truncate(saveCache.Name, 45))
 	escUsernp := html.EscapeString(saveCache.User)
 
 	nowPlaying := fmt.Sprintf(
@@ -450,7 +450,7 @@ func handleMultipleTracks(c *td.Client, m *td.Message, updater *td.Message, trac
 	totalDuration := 0
 	for i, track := range tracksToAdd {
 		currentQLen := startLen + i + 1
-		escTrackName := html.EscapeString(track.Name)
+		escTrackName := html.EscapeString(truncate(track.Name, 40))
 		fmt.Fprintf(&sb, "<b>%d.</b> %s\n└ Duration: %s\n",
 			currentQLen, escTrackName, utils.SecToMin(track.Duration))
 		totalDuration += track.Duration
