@@ -129,11 +129,33 @@ func (c *TelegramCalls) playSong(bot *td.Client, chatID int64, song *utils.Cache
         html.EscapeString(song.User),
     )
 
-    _, err = reply.EditText(bot, text, &td.EditTextMessageOpts{
-        ReplyMarkup:           core.ControlButtons("play"),
-        ParseMode:             "HTML",
-        DisableWebPagePreview: true,
-    })
+    // Finalize: convert the plain-text status message into a photo message carrying the
+    // default thumbnail, via EditMedia. This mirrors finalizeUpdater in play.go — see the
+    // comment there for why this is attempted defensively with a delete+resend fallback.
+    caption, err := bot.GetFormattedText(text, nil, "HTML")
+    if err != nil {
+        slog.Info("[playSong] Failed to format caption", "error", err)
+        return nil
+    }
+
+    content := &td.InputMessagePhoto{
+        Photo: &td.InputPhoto{
+            Photo: &td.InputFileRemote{Id: config.ThumbnailImg},
+        },
+        Caption: caption,
+    }
+
+    _, err = reply.EditMedia(bot, content, &td.EditMessageMediaOpts{ReplyMarkup: core.ControlButtons("play")})
+    if err != nil {
+        slog.Info("[playSong] EditMedia (text->photo) failed, falling back to delete+resend", "error", err)
+        _ = bot.DeleteMessages(chatID, []int64{reply.Id}, &td.DeleteMessagesOpts{Revoke: true})
+
+        _, err = bot.SendPhoto(chatID, &td.InputFileRemote{Id: config.ThumbnailImg}, &td.SendPhotoOpts{
+            Caption:     text,
+            ParseMode:   "HTML",
+            ReplyMarkup: core.ControlButtons("play"),
+        })
+    }
 
     if err != nil {
         slog.Info("[playSong] Failed to edit message", "error", err)
