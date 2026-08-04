@@ -133,11 +133,11 @@ func handlePlay(c *td.Client, m *td.Message, isVideo bool, force bool) error {
 	}
 
 	if url == "" && args == "" && (!isReply || !isValidMedia(rMsg)) {
-		_, _ = m.ReplyText(c, "<b>Usage:</b>\n/play [song or URL]\n\n<b>Supported Platforms:</b>\n- YouTube\n- Spotify\n- JioSaavn\n- Apple Music", &td.SendTextMessageOpts{ReplyMarkup: core.SupportKeyboard(), ParseMode: "HTML"})
+		_, _ = m.ReplyText(c, "Usage:\n\n`/play attention`", &td.SendTextMessageOpts{ParseMode: "HTML"})
 		return td.EndGroups
 	}
 
-	updater, err := m.ReplyText(c, "🔍 Searching and downloading...", nil)
+	updater, err := m.ReplyText(c, "𝖯𝗋𝗈𝖼𝖾𝗌𝗌𝗂𝗇𝗀 𝖸𝗈𝗎𝗋 𝖰𝗎𝖾𝗋𝗒 ... 𝖧𝗈𝗅𝖽 𝖮𝗇 !", nil)
 	if err != nil {
 		c.Logger.Warn("failed to send message", "error", err)
 		return td.EndGroups
@@ -222,10 +222,10 @@ func handleMedia(c *td.Client, m *td.Message, updater *td.Message, dlMsg *td.Mes
 		escName := html.EscapeString(saveCache.Name)
 		escUser := html.EscapeString(saveCache.User)
 		queueInfo := fmt.Sprintf(
-			"<u><b>Added to queue: %d</b></u>\n\n<b>Title:</b> <a href='%s'>%s</a>\n\n<b>Duration:</b> %s min\n<b>Requested by:</b> %s",
+			"➲ 𝖠𝖽𝖽𝖾𝖽 𝖳𝗈 𝖰𝗎𝖾𝗎𝖾 𝖠𝗍 #%d\n\n‣ 𝖳𝗂𝗍𝗅𝖾 : <a href='%s'>%s</a>\n‣ 𝖣𝗎𝗋𝖺𝗍𝗂𝗈𝗇 : %s Min\n‣ 𝖱𝖾𝗊𝗎𝖾𝗌𝗍𝖾𝖽 𝖡𝗒 : %s",
 			qLen, escURL, escName, utils.SecToMin(saveCache.Duration), escUser,
 		)
-		_, err := updater.EditText(c, queueInfo, &td.EditTextMessageOpts{ReplyMarkup: core.QueueMarkup(saveCache.TrackID), ParseMode: "HTML", DisableWebPagePreview: true})
+		_, err := updater.EditText(c, queueInfo, &td.EditTextMessageOpts{ReplyMarkup: core.QueueMarkup(c.Me.Usernames.EditableUsername), ParseMode: "HTML", DisableWebPagePreview: true})
 		return err
 	}
 
@@ -255,13 +255,13 @@ func handleMedia(c *td.Client, m *td.Message, updater *td.Message, dlMsg *td.Mes
 	escUser := html.EscapeString(saveCache.User)
 
 	nowPlaying := fmt.Sprintf(
-		"<u><b>| Started streaming</b></u>\n\n<b>Title:</b> <a href='%s'>%s</a>\n\n<b>Duration:</b> %s min\n<b>Requested by:</b> %s",
+		"➜ 𝖲𝗍𝖺𝗋𝗍𝖾𝖽 𝖲𝗍𝗋𝖾𝖺𝗆𝗂𝗇𝗀 |\n\n‣ 𝖳𝗂𝗍𝗅𝖾 : <a href='%s'>%s</a>\n‣ 𝖣𝗎𝗋𝖺𝗍𝗂𝗈𝗇 : %s Min\n‣ 𝖱𝖾𝗊𝗎𝖾𝗌𝗍𝖾𝖽 𝖡𝗒 : %s",
 		escURL, escName, utils.SecToMin(saveCache.Duration), escUser,
 	)
 
 	_, err = updater.EditText(c, nowPlaying, &td.EditTextMessageOpts{
 		ParseMode:             "HTML",
-		ReplyMarkup:           core.ControlButtons("play"),
+		ReplyMarkup:           core.ControlButtons("play", c.Me.Usernames.EditableUsername),
 		DisableWebPagePreview: true,
 	})
 
@@ -334,11 +334,11 @@ func handleSingleTrack(c *td.Client, m *td.Message, updater *td.Message, song ut
 		escName := html.EscapeString(saveCache.Name)
 		escUser := html.EscapeString(saveCache.User)
 		queueInfo := fmt.Sprintf(
-			"<u><b>Added to queue: %d</b></u>\n\n<b>Title:</b> <a href='%s'>%s</a>\n\n<b>Duration:</b> %s min\n<b>Requested by:</b> %s",
+			"➲ 𝖠𝖽𝖽𝖾𝖽 𝖳𝗈 𝖰𝗎𝖾𝗎𝖾 𝖠𝗍 #%d\n\n‣ 𝖳𝗂𝗍𝗅𝖾 : <a href='%s'>%s</a>\n‣ 𝖣𝗎𝗋𝖺𝗍𝗂𝗈𝗇 : %s Min\n‣ 𝖱𝖾𝗊𝗎𝖾𝗌𝗍𝖾𝖽 𝖡𝗒 : %s",
 			qLen, escURL, escName, utils.SecToMin(saveCache.Duration), escUser,
 		)
 
-		_, err := updater.EditText(c, queueInfo, &td.EditTextMessageOpts{ReplyMarkup: core.QueueMarkup(saveCache.TrackID), ParseMode: "HTML", DisableWebPagePreview: true})
+		_, err := updater.EditText(c, queueInfo, &td.EditTextMessageOpts{ReplyMarkup: core.QueueMarkup(c.Me.Usernames.EditableUsername), ParseMode: "HTML", DisableWebPagePreview: true})
 		return err
 	}
 
@@ -364,12 +364,12 @@ func handleSingleTrack(c *td.Client, m *td.Message, updater *td.Message, song ut
 	escUsernp := html.EscapeString(saveCache.User)
 
 	nowPlaying := fmt.Sprintf(
-		"<u><b>| Started streaming</b></u>\n\n<b>Title:</b> <a href='%s'>%s</a>\n\n<b>Duration:</b> %s min\n<b>Requested by:</b> %s",
+		"➜ 𝖲𝗍𝖺𝗋𝗍𝖾𝖽 𝖲𝗍𝗋𝖾𝖺𝗆𝗂𝗇𝗀 |\n\n‣ 𝖳𝗂𝗍𝗅𝖾 : <a href='%s'>%s</a>\n‣ 𝖣𝗎𝗋𝖺𝗍𝗂𝗈𝗇 : %s Min\n‣ 𝖱𝖾𝗊𝗎𝖾𝗌𝗍𝖾𝖽 𝖡𝗒 : %s",
 		escURLnp, escNamenp, utils.SecToMin(song.Duration), escUsernp,
 	)
 
 	_, err := updater.EditText(c, nowPlaying, &td.EditTextMessageOpts{
-		ReplyMarkup:           core.ControlButtons("play"),
+		ReplyMarkup:           core.ControlButtons("play", c.Me.Usernames.EditableUsername),
 		ParseMode:             "HTML",
 		DisableWebPagePreview: true,
 	})
@@ -389,7 +389,7 @@ func handleMultipleTracks(c *td.Client, m *td.Message, updater *td.Message, trac
 		return err
 	}
 
-	queueHeader := "<u><b>Added to Queue:</b></u>\n<blockquote expandable>\n"
+	queueHeader := "➲ 𝖠𝖽𝖽𝖾𝖽 𝖳𝗈 𝖰𝗎𝖾𝗎𝖾\n<blockquote expandable>\n"
 	var tracksToAdd []*utils.CachedTrack
 	var skippedTracks []string
 
@@ -480,7 +480,7 @@ func handleMultipleTracks(c *td.Client, m *td.Message, updater *td.Message, trac
 
 	_, err := updater.EditText(c, fullMessage, &td.EditTextMessageOpts{
 		ParseMode:             "HTML",
-		ReplyMarkup:           core.QueueMarkup(tracksToAdd[0].TrackID),
+		ReplyMarkup:           core.QueueMarkup(c.Me.Usernames.EditableUsername),
 		DisableWebPagePreview: true,
 	})
 
