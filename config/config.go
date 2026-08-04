@@ -42,6 +42,7 @@ var (
 	ThumbnailImg        = getEnv("THUMBNAIL_IMG", "https://graph.org/file/8dbec71acd69d06fcf7d2-6456500570fd351ac3.jpg")
 	SupportGroup        = getEnv("SUPPORT_GROUP", "https://t.me/FallenSupport")
 	SupportChannel      = getEnv("SUPPORT_CHANNEL", "https://t.me/FallenProjects")
+	OwnerUsername       = os.Getenv("OWNER_USERNAME")
 	StartImg            = getEnv("START_IMG", "https://i.pinimg.com/736x/0d/f4/65/0df465d1e98239ecb6283400605fc813.jpg")
 	Port                = getEnv("PORT", "6060")
 	AutoLeave           = getEnvBool("AUTO_LEAVE", false)
