@@ -32,6 +32,7 @@ var (
 	DevilApiUrl         = os.Getenv("DEVIL_API_URL")
 	DevilApiKey         = os.Getenv("DEVIL_API_KEY")
 	OwnerId             = getEnvInt64("OWNER_ID", 0)
+	BotUsername         = getEnv("BOT_USERNAME", "FallbackBot")
 	LoggerId            = getEnvInt64("LOGGER_ID", 0)
 	Proxy               = os.Getenv("PROXY")
 	DefaultService      = strings.ToLower(getEnv("DEFAULT_SERVICE", "youtube"))
