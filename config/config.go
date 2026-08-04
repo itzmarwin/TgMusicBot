@@ -39,6 +39,7 @@ var (
 	MaxFileSize         = getEnvInt64("MAX_FILE_SIZE", 500*1024*1024)
 	SongDurationLimit   = getEnvInt64("SONG_DURATION_LIMIT", 3600)
 	DownloadsDir        = getEnv("DOWNLOADS_DIR", "database")
+	ThumbnailImg        = getEnv("THUMBNAIL_IMG", "https://graph.org/file/8dbec71acd69d06fcf7d2-6456500570fd351ac3.jpg")
 	SupportGroup        = getEnv("SUPPORT_GROUP", "https://t.me/FallenSupport")
 	SupportChannel      = getEnv("SUPPORT_CHANNEL", "https://t.me/FallenProjects")
 	StartImg            = getEnv("START_IMG", "https://i.pinimg.com/736x/0d/f4/65/0df465d1e98239ecb6283400605fc813.jpg")
