@@ -265,7 +265,7 @@ func handleMedia(c *td.Client, m *td.Message, updater *td.Message, dlMsg *td.Mes
             "<b>➲ Added To Queue At #%d</b>\n\n<b>‣ Title</b> : <a href='%s'>%s</a>\n<b>‣ Duration</b> : %s Minutes\n<b>‣ Requested By</b> : %s",
             qLen, escURL, escName, utils.SecToMin(saveCache.Duration), escUser,
         )
-        _, err := editUpdater(c, updater, queueInfo, &td.EditTextMessageOpts{ReplyMarkup: core.QueueMarkup(saveCache.TrackID), ParseMode: "HTML"})
+        _, err := editUpdater(c, updater, queueInfo, &td.EditTextMessageOpts{ReplyMarkup: core.QueueMarkup(saveCache.TrackID), ParseMode: "HTML", DisableWebPagePreview: true})
         return err
     }
 
@@ -379,7 +379,7 @@ func handleSingleTrack(c *td.Client, m *td.Message, updater *td.Message, song ut
             qLen, escURL, escName, utils.SecToMin(saveCache.Duration), escUser,
         )
 
-        _, err := editUpdater(c, updater, queueInfo, &td.EditTextMessageOpts{ReplyMarkup: core.QueueMarkup(saveCache.TrackID), ParseMode: "HTML"})
+        _, err := editUpdater(c, updater, queueInfo, &td.EditTextMessageOpts{ReplyMarkup: core.QueueMarkup(saveCache.TrackID), ParseMode: "HTML", DisableWebPagePreview: true})
         return err
     }
 
@@ -521,8 +521,9 @@ func handleMultipleTracks(c *td.Client, m *td.Message, updater *td.Message, trac
     }
 
     _, err := editUpdater(c, updater, fullMessage, &td.EditTextMessageOpts{
-        ParseMode:   "HTML",
-        ReplyMarkup: core.QueueMarkup(tracksToAdd[0].TrackID),
+        ParseMode:             "HTML",
+        ReplyMarkup:           core.QueueMarkup(tracksToAdd[0].TrackID),
+        DisableWebPagePreview: true,
     })
 
     return err
