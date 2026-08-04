@@ -45,7 +45,8 @@ func url(text, link string, style gotdbot.ButtonStyle) gotdbot.InlineKeyboardBut
 }
 
 var CloseBtn = cb("Close", "vcplay_close", gotdbot.ButtonStyleDanger{})
-var BackBtn = cb("Back", "help_back", gotdbot.ButtonStylePrimary{})
+var HomeBtn = cb("Home", "help_back", gotdbot.ButtonStylePrimary{})
+var BackBtn = cb("Back", "help_all", gotdbot.ButtonStylePrimary{})
 var HelpBtn = cb("Help", "help_all", gotdbot.ButtonStyleDefault{})
 var UserBtn = cb("Users", "help_user", gotdbot.ButtonStyleDefault{})
 var AdminBtn = cb("Admins", "help_admin", gotdbot.ButtonStyleDefault{})
@@ -124,7 +125,7 @@ func HelpMenuKeyboard() *gotdbot.ReplyMarkupInlineKeyboard {
         Rows: [][]gotdbot.InlineKeyboardButton{
             {UserBtn, AdminBtn, OwnerBtn},
             {PlaylistBtn, DevsBtn, AutoplayBtn},
-            {BackBtn, CloseBtn},
+            {HomeBtn, CloseBtn},
         },
     }
 }
