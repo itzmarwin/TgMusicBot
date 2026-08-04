@@ -51,9 +51,8 @@ func playCallbackHandler(c *td.Client, cb *td.UpdateNewCallbackQuery) error {
 
 	buildTrackMessage := func(status, emoji string) string {
 		escURL := html.EscapeString(currentTrack.URL)
-		escName := html.EscapeString(truncate(currentTrack.Name, 45))
+		escName := html.EscapeString(currentTrack.Name)
 		escUser := html.EscapeString(currentTrack.User)
-
 		return fmt.Sprintf("%s <b>%s</b>\n\n<b>Track:</b> <a href='%s'>%s</a>\n<b>Duration:</b> %s\n<b>Requested by:</b> %s",
 			emoji, status,
 			escURL, escName,
