@@ -130,7 +130,7 @@ func (c *TelegramCalls) playSong(bot *td.Client, chatID int64, song *utils.Cache
 	)
 
 	_, err = reply.EditText(bot, text, &td.EditTextMessageOpts{
-		ReplyMarkup:           core.ControlButtons("play"),
+		ReplyMarkup:           core.ControlButtons(bot, "play"),
 		ParseMode:             "HTML",
 		DisableWebPagePreview: true,
 	})
