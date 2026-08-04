@@ -225,7 +225,7 @@ func handleMedia(c *td.Client, m *td.Message, updater *td.Message, dlMsg *td.Mes
 			"<b>➲ 𝖠𝖽𝖽𝖾𝖽 𝖳𝗈 𝖰𝗎𝖾𝗎𝖾 𝖠𝗍 #%d</b>\n\n‣ <b>𝖳𝗂𝗍𝗅𝖾</b> : <a href='%s'>%s</a>\n‣ <b>𝖣𝗎𝗋𝖺𝗍𝗂𝗈𝗇</b> : %s 𝖬𝗂𝗇𝗎𝗍𝖾𝗌\n‣ <b>𝖱𝖾𝗊𝗎𝖾𝗌𝗍𝖾𝖽 𝖡𝗒</b> : %s",
 			qLen, escURL, escName, utils.SecToMin(saveCache.Duration), escUser,
 		)
-		_, err := updater.EditText(c, queueInfo, &td.EditTextMessageOpts{ReplyMarkup: core.QueueMarkup(saveCache.TrackID), ParseMode: "HTML", DisableWebPagePreview: true})
+		_, err := updater.EditText(c, queueInfo, &td.EditTextMessageOpts{ReplyMarkup: core.QueueMarkup(c, saveCache.TrackID), ParseMode: "HTML", DisableWebPagePreview: true})
 		return err
 	}
 
@@ -261,7 +261,7 @@ func handleMedia(c *td.Client, m *td.Message, updater *td.Message, dlMsg *td.Mes
 
 	_, err = updater.EditText(c, nowPlaying, &td.EditTextMessageOpts{
 		ParseMode:             "HTML",
-		ReplyMarkup:           core.ControlButtons("play"),
+		ReplyMarkup:           core.ControlButtons(c, "play"),
 		DisableWebPagePreview: true,
 	})
 
@@ -338,7 +338,7 @@ func handleSingleTrack(c *td.Client, m *td.Message, updater *td.Message, song ut
 			qLen, escURL, escName, utils.SecToMin(saveCache.Duration), escUser,
 		)
 
-		_, err := updater.EditText(c, queueInfo, &td.EditTextMessageOpts{ReplyMarkup: core.QueueMarkup(saveCache.TrackID), ParseMode: "HTML", DisableWebPagePreview: true})
+		_, err := updater.EditText(c, queueInfo, &td.EditTextMessageOpts{ReplyMarkup: core.QueueMarkup(c, saveCache.TrackID), ParseMode: "HTML", DisableWebPagePreview: true})
 		return err
 	}
 
@@ -369,7 +369,7 @@ func handleSingleTrack(c *td.Client, m *td.Message, updater *td.Message, song ut
 	)
 
 	_, err := updater.EditText(c, nowPlaying, &td.EditTextMessageOpts{
-		ReplyMarkup:           core.ControlButtons("play"),
+		ReplyMarkup:           core.ControlButtons(c, "play"),
 		ParseMode:             "HTML",
 		DisableWebPagePreview: true,
 	})
@@ -480,7 +480,7 @@ func handleMultipleTracks(c *td.Client, m *td.Message, updater *td.Message, trac
 
 	_, err := updater.EditText(c, fullMessage, &td.EditTextMessageOpts{
 		ParseMode:             "HTML",
-		ReplyMarkup:           core.QueueMarkup(tracksToAdd[0].TrackID),
+		ReplyMarkup:           core.QueueMarkup(c, tracksToAdd[0].TrackID),
 		DisableWebPagePreview: true,
 	})
 
