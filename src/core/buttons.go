@@ -58,6 +58,9 @@ var SourceCodeBtn = url("Source Code", "https://github.com/AshokShau/TgMusicBot"
 var channelBtn = url("Updates", config.SupportChannel, gotdbot.ButtonStyleDefault{})
 var groupBtn = url("Group", config.SupportGroup, gotdbot.ButtonStyleDefault{})
 
+// groupAddBtn opens the "add bot to group" flow using the bot's own username.
+var groupAddBtn = url("Add Me In Your Group", "https://t.me/MikasaMusicV2Bot?startgroup=true", gotdbot.ButtonStylePrimary{})
+
 func SupportKeyboard() *gotdbot.ReplyMarkupInlineKeyboard {
 	return &gotdbot.ReplyMarkupInlineKeyboard{
 		Rows: [][]gotdbot.InlineKeyboardButton{
@@ -145,7 +148,6 @@ func ControlButtons(mode string) *gotdbot.ReplyMarkupInlineKeyboard {
 	resumeBtn := cb("▷", "play_resume", gotdbot.ButtonStyleDefault{})
 	muteBtn := cb("🔇", "play_mute", gotdbot.ButtonStyleDefault{})
 	unmuteBtn := cb("🔊", "play_unmute", gotdbot.ButtonStyleDefault{})
-	addToPlaylistBtn := cb("➕", "play_add_to_list", gotdbot.ButtonStylePrimary{})
 
 	switch mode {
 
@@ -153,7 +155,8 @@ func ControlButtons(mode string) *gotdbot.ReplyMarkupInlineKeyboard {
 		return &gotdbot.ReplyMarkupInlineKeyboard{
 			Rows: [][]gotdbot.InlineKeyboardButton{
 				{skipBtn, stopBtn, pauseBtn},
-				{addToPlaylistBtn, CloseBtn},
+				{groupAddBtn},
+				{CloseBtn},
 			},
 		}
 
@@ -223,7 +226,7 @@ func PlayNowButton(trackID string) gotdbot.InlineKeyboardButton {
 func QueueMarkup(trackID string) *gotdbot.ReplyMarkupInlineKeyboard {
 	return &gotdbot.ReplyMarkupInlineKeyboard{
 		Rows: [][]gotdbot.InlineKeyboardButton{
-			{PlayNowButton(trackID), CloseBtn},
+			{groupAddBtn, CloseBtn},
 		},
 	}
 }
