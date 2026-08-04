@@ -9,7 +9,6 @@
 package handlers
 
 import (
-	"ashokshau/tgmusic/config"
 	"fmt"
 	"strings"
 
@@ -123,7 +122,7 @@ func helpCallbackHandler(c *td.Client, cb *td.UpdateNewCallbackQuery) error {
 			c.Me.FirstName,
 		)
 
-		_, _ = cb.EditMessageText(c, response, &td.EditTextMessageOpts{ReplyMarkup: core.HelpMenuKeyboard(), ParseMode: "HTML"})
+		_, _ = cb.EditMessageCaption(c, response, &td.EditCaptionOpts{ReplyMarkup: core.HelpMenuKeyboard(), ParseMode: "HTML"})
 		return nil
 	}
 
@@ -139,31 +138,14 @@ func helpCallbackHandler(c *td.Client, cb *td.UpdateNewCallbackQuery) error {
 			c.Me.FirstName,
 		)
 
-		caption, err := c.GetFormattedText(response, nil, "HTML")
-		if err != nil {
-			return err
-		}
-
-		content := &td.InputMessagePhoto{
-			Photo: &td.InputPhoto{
-				Photo: &td.InputFileRemote{Id: config.StartImg},
-			},
-			Caption: caption,
-		}
-
-		msg, err := cb.GetMessage(c)
-		if err != nil {
-			return err
-		}
-
-		_, _ = msg.EditMedia(c, content, &td.EditMessageMediaOpts{ReplyMarkup: core.AddMeMarkup(c.Me.Usernames.EditableUsername)})
+		_, _ = cb.EditMessageCaption(c, response, &td.EditCaptionOpts{ReplyMarkup: core.AddMeMarkup(c.Me.Usernames.EditableUsername), ParseMode: "HTML"})
 		return nil
 	}
 
 	if category, ok := helpCategories[data]; ok {
 		_ = cb.Answer(c, 0, false, category.Title, "")
 		response := fmt.Sprintf("<b>%s</b>\n\n%s", category.Title, category.Content)
-		_, _ = cb.EditMessageText(c, response, &td.EditTextMessageOpts{ReplyMarkup: category.Markup, ParseMode: "HTML"})
+		_, _ = cb.EditMessageCaption(c, response, &td.EditCaptionOpts{ReplyMarkup: category.Markup, ParseMode: "HTML"})
 		return nil
 	}
 
