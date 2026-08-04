@@ -138,23 +138,23 @@ func BackHelpMenuKeyboard() *gotdbot.ReplyMarkupInlineKeyboard {
 	}
 }
 
-func AddMeButton(username string) gotdbot.InlineKeyboardButton {
+func AddMeButton() gotdbot.InlineKeyboardButton {
 	return url(
 		"Add Me In Your Group",
-		fmt.Sprintf("https://t.me/%s?startgroup=true", username),
+		fmt.Sprintf("https://t.me/%s?startgroup=true", config.BotUsername),
 		gotdbot.ButtonStylePrimary{},
 	)
 }
 
-func AddMeShortButton(username string) gotdbot.InlineKeyboardButton {
+func AddMeShortButton() gotdbot.InlineKeyboardButton {
 	return url(
 		"Add Me",
-		fmt.Sprintf("https://t.me/%s?startgroup=true", username),
+		fmt.Sprintf("https://t.me/%s?startgroup=true", config.BotUsername),
 		gotdbot.ButtonStylePrimary{},
 	)
 }
 
-func ControlButtons(mode string, username string) *gotdbot.ReplyMarkupInlineKeyboard {
+func ControlButtons(mode string) *gotdbot.ReplyMarkupInlineKeyboard {
 	skipBtn := cb("‣‣I", "play_skip", gotdbot.ButtonStyleDefault{})
 	stopBtn := cb("▢", "play_stop", gotdbot.ButtonStyleDefault{})
 	pauseBtn := cb("II", "play_pause", gotdbot.ButtonStyleDefault{})
@@ -178,7 +178,7 @@ func ControlButtons(mode string, username string) *gotdbot.ReplyMarkupInlineKeyb
 		row1 = []gotdbot.InlineKeyboardButton{CloseBtn}
 	}
 
-	row2 := []gotdbot.InlineKeyboardButton{AddMeButton(username)}
+	row2 := []gotdbot.InlineKeyboardButton{AddMeButton()}
 	row3 := []gotdbot.InlineKeyboardButton{CloseBtn}
 
 	return &gotdbot.ReplyMarkupInlineKeyboard{
@@ -191,7 +191,6 @@ func ControlButtons(mode string, username string) *gotdbot.ReplyMarkupInlineKeyb
 }
 
 func AddMeMarkup(username string) *gotdbot.ReplyMarkupInlineKeyboard {
-
 	addMeBtn := url(
 		"Aᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ",
 		fmt.Sprintf("https://t.me/%s?startgroup=true", username),
@@ -212,10 +211,10 @@ func PlayNowButton(trackID string) gotdbot.InlineKeyboardButton {
 	return cb("Play Now", fmt.Sprintf("play_now_%s", trackID), gotdbot.ButtonStyleDanger{})
 }
 
-func QueueMarkup(username string) *gotdbot.ReplyMarkupInlineKeyboard {
+func QueueMarkup() *gotdbot.ReplyMarkupInlineKeyboard {
 	return &gotdbot.ReplyMarkupInlineKeyboard{
 		Rows: [][]gotdbot.InlineKeyboardButton{
-			{AddMeShortButton(username), CloseBtn},
+			{AddMeShortButton(), CloseBtn},
 		},
 	}
 }
