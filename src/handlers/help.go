@@ -30,81 +30,73 @@ func getHelpCategories() map[string]struct {
 	}{
 		"help_user": {
 			Title: "User Commands",
-			Content: `Commands available to all members of the chat.
-
-<b>Playback</b>
-<b>/play</b> [song] — Play music from YouTube, Spotify, SoundCloud, and other supported platforms.
-<b>/vplay</b> [song] — Play a video in the group video chat.
-<b>/fplay</b> [song] — Play a track immediately, skipping the current queue.
-<b>/fvplay</b> [song] — Play a video immediately, skipping the current queue.
-
-<b>General</b>
-<b>/start</b> — Start the bot or verify that it is online.
-<b>/help</b> — Open the interactive help menu.
-<b>/ping</b> — Display the bot's response time and system information.
-<b>/privacy</b> — View the bot's privacy policy.
-<b>/queue</b> — Display the current playback queue.`,
+			Content: "Commands available to all members of the chat.\n\n" +
+				"<b>Playback</b>\n" +
+				"/play [song]: Play music from YouTube, Spotify, SoundCloud, and other supported platforms.\n" +
+				"/vplay [song]: Play a video in the group video chat.\n" +
+				"/fplay [song]: Play a track immediately, skipping the current queue.\n" +
+				"/fvplay [song]: Play a video immediately, skipping the current queue.\n\n" +
+				"<b>General</b>\n" +
+				"/start: Start the bot or verify that it is online.\n" +
+				"/help: Open the interactive help menu.\n" +
+				"/ping: Display the bot's response time and system information.\n" +
+				"/privacy: View the bot's privacy policy.\n" +
+				"/queue: Display the current playback queue.",
 			Markup: core.BackHelpMenuKeyboard(),
 		},
 		"help_admin": {
 			Title: "Admin Commands",
-			Content: `Commands available to chat administrators and authorized users.
-
-<b>Playback Control</b>
-<b>/skip</b> — Skip the currently playing track.
-<b>/pause</b> — Pause playback.
-<b>/resume</b> — Resume playback.
-<b>/seek</b> [seconds] — Jump to a specific position in the current track.
-<b>/mute</b> — Mute the voice chat audio.
-<b>/unmute</b> — Unmute the voice chat audio.
-
-<b>Queue & Access</b>
-<b>/remove</b> [index] — Remove a track from the queue by its position.
-<b>/loop</b> [0-10] — Repeat the current track the specified number of times.
-<b>/auth</b> — Authorize a user to use administrator commands.
-<b>/unauth</b> — Remove a user's authorization.
-<b>/authlist</b> — Show all authorized users in the current chat.`,
+			Content: "Commands available to chat administrators and authorized users.\n\n" +
+				"<b>Playback Control</b>\n" +
+				"/skip: Skip the currently playing track.\n" +
+				"/pause: Pause playback.\n" +
+				"/resume: Resume playback.\n" +
+				"/seek [seconds]: Jump to a specific position in the current track.\n" +
+				"/mute: Mute the voice chat audio.\n" +
+				"/unmute: Unmute the voice chat audio.\n\n" +
+				"<b>Queue & Access</b>\n" +
+				"/remove [index]: Remove a track from the queue by its position.\n" +
+				"/loop [0-10]: Repeat the current track the specified number of times.\n" +
+				"/auth: Authorize a user to use administrator commands.\n" +
+				"/unauth: Remove a user's authorization.\n" +
+				"/authlist: Show all authorized users in the current chat.",
 			Markup: core.BackHelpMenuKeyboard(),
 		},
 		"help_devs": {
 			Title: "Developer Commands",
-			Content: `Commands intended for bot developers and maintainers.
-
-<b>System</b>
-<b>/stats</b> — Display bot, hosting, and database statistics.
-<b>/av</b> — List all active voice and video chats.
-<b>/clearass</b> — Disconnect and clear all active assistant clients.
-<b>/leaveall</b> — Disconnect assistants from every active chat.
-<b>/logger</b> — View the current logging configuration.`,
+			Content: "Commands intended for bot developers and maintainers.\n\n" +
+				"<b>System</b>\n" +
+				"/stats: Display bot, hosting, and database statistics.\n" +
+				"/av: List all active voice and video chats.\n" +
+				"/clearass: Disconnect and clear all active assistant clients.\n" +
+				"/leaveall: Disconnect assistants from every active chat.\n" +
+				"/logger: View the current logging configuration.",
 			Markup: core.BackHelpMenuKeyboard(),
 		},
 		"help_owner": {
 			Title: "Chat Owner Commands",
-			Content: `Configuration options available to the chat owner.
-
-<b>Chat Settings</b>
-<b>/settings</b> — Manage chat settings, including play mode, administrator mode, command auto-delete, and language preferences.`,
+			Content: "Configuration options available to the chat owner.\n\n" +
+				"<b>Chat Settings</b>\n" +
+				"/settings: Manage chat settings, including play mode, administrator mode, command auto-delete, and language preferences.",
 			Markup: core.BackHelpMenuKeyboard(),
 		},
 		"help_playlist": {
 			Title: "Playlist Commands",
-			Content: `Create, organize, and manage your personal playlists.
-
-<b>Playlist Management</b>
-<b>/createplaylist</b> — Create a new playlist.
-<b>/deleteplaylist</b> — Delete one of your playlists.
-<b>/addtoplaylist</b> — Add a track to a playlist.
-<b>/removefromplaylist</b> — Remove a track from a playlist.
-<b>/playlistinfo</b> — Display information about a playlist.
-<b>/myplaylists</b> — List all of your playlists.`,
+			Content: "Create, organize, and manage your personal playlists.\n\n" +
+				"<b>Playlist Management</b>\n" +
+				"/createplaylist: Create a new playlist.\n" +
+				"/deleteplaylist: Delete one of your playlists.\n" +
+				"/addtoplaylist: Add a track to a playlist.\n" +
+				"/removefromplaylist: Remove a track from a playlist.\n" +
+				"/playlistinfo: Display information about a playlist.\n" +
+				"/myplaylists: List all of your playlists.",
 			Markup: core.BackHelpMenuKeyboard(),
 		},
 		"help_autoplay": {
 			Title: "Autoplay Commands",
-			Content: `Automatically continue playback with recommended tracks.
-
-<b>Autoplay</b>
-<b>/autoplay</b> — Enable or disable autoplay. When enabled, recommended tracks are automatically queued when playback ends.`,
+			Content: "Automatically continue playback with recommended tracks.\n\n" +
+				"<b>Autoplay</b>\n" +
+				"/autoplay: Enable or disable autoplay. When enabled, recommended tracks are automatically queued when playback ends.",
 			Markup: core.BackHelpMenuKeyboard(),
 		},
 	}
@@ -123,20 +115,15 @@ func helpCallbackHandler(c *td.Client, cb *td.UpdateNewCallbackQuery) error {
 	if strings.Contains(data, "help_all") {
 		_ = cb.Answer(c, 0, false, "Opening help menu...", "")
 		response := fmt.Sprintf(
-			"<h3>Welcome, %s!</h3>\n"+
-				"<p><b>%s</b> is a fast, reliable, and feature-rich music bot for Telegram voice and video chats.</p>\n\n"+
-				"<p><b>Supported platforms:</b> YouTube, Spotify, Apple Music, SoundCloud, Deezer, Twitch, and many more.</p>\n\n"+
-				"<p>Select a category below to browse the available commands.</p>",
+			"<b>Welcome, %s!</b>\n\n"+
+				"<b>%s</b> is a fast, reliable, and feature-rich music bot for Telegram voice and video chats.\n\n"+
+				"<b>Supported platforms:</b> YouTube, Spotify, Apple Music, SoundCloud, Deezer, Twitch, and many more.\n\n"+
+				"Select a category below to browse the available commands.",
 			user.FirstName,
 			c.Me.FirstName,
 		)
 
-		richMessage := &td.InputRichMessage{
-			Source: &td.RichMessageSourceHtml{
-				Text: response,
-			},
-		}
-		_, _ = c.EditMessageText(cb.ChatId, &td.InputMessageRichMessage{Message: richMessage}, cb.MessageId, &td.EditMessageTextOpts{ReplyMarkup: core.HelpMenuKeyboard()})
+		_, _ = cb.EditMessageText(c, response, &td.EditTextMessageOpts{ReplyMarkup: core.HelpMenuKeyboard(), ParseMode: "HTML"})
 		return nil
 	}
 
@@ -144,34 +131,39 @@ func helpCallbackHandler(c *td.Client, cb *td.UpdateNewCallbackQuery) error {
 		_ = cb.Answer(c, 0, false, "Returning to main menu...", "")
 
 		response := fmt.Sprintf(
-			"<img src=\"%s\"/>\n"+
-				"<h3>Welcome, %s!</h3>\n"+
-				"<p><b>%s</b> lets you stream high-quality music and video directly in Telegram voice and video chats.</p>\n\n"+
-				"<p><b>Supported platforms:</b> YouTube, Spotify, Apple Music, SoundCloud, Deezer, Twitch, and many more.</p>\n\n"+
-				"<p>Use the buttons below to add the bot to your group or explore the available commands.</p>",
-			config.StartImg,
+			"<b>Welcome, %s!</b>\n\n"+
+				"<b>%s</b> lets you stream high-quality music and video directly in Telegram voice and video chats.\n\n"+
+				"<b>Supported platforms:</b> YouTube, Spotify, Apple Music, SoundCloud, Deezer, Twitch, and many more.\n\n"+
+				"Use the buttons below to add the bot to your group or explore the available commands.",
 			user.FirstName,
 			c.Me.FirstName,
 		)
 
-		richMessage := &td.InputRichMessage{
-			Source: &td.RichMessageSourceHtml{
-				Text: response,
-			},
+		caption, err := c.GetFormattedText(response, nil, "HTML")
+		if err != nil {
+			return err
 		}
-		_, _ = c.EditMessageText(cb.ChatId, &td.InputMessageRichMessage{Message: richMessage}, cb.MessageId, &td.EditMessageTextOpts{ReplyMarkup: core.AddMeMarkup(c.Me.Usernames.EditableUsername)})
+
+		content := &td.InputMessagePhoto{
+			Photo: &td.InputPhoto{
+				Photo: &td.InputFileRemote{Id: config.StartImg},
+			},
+			Caption: caption,
+		}
+
+		msg, err := cb.GetMessage(c)
+		if err != nil {
+			return err
+		}
+
+		_, _ = msg.EditMedia(c, content, &td.EditMessageMediaOpts{ReplyMarkup: core.AddMeMarkup(c.Me.Usernames.EditableUsername)})
 		return nil
 	}
 
 	if category, ok := helpCategories[data]; ok {
 		_ = cb.Answer(c, 0, false, category.Title, "")
-		response := fmt.Sprintf("<h3>%s</h3>\n\n%s\n\n<i>Use the buttons below to go back.</i>", category.Title, category.Content)
-		richMessage := &td.InputRichMessage{
-			Source: &td.RichMessageSourceHtml{
-				Text: response,
-			},
-		}
-		_, _ = c.EditMessageText(cb.ChatId, &td.InputMessageRichMessage{Message: richMessage}, cb.MessageId, &td.EditMessageTextOpts{ReplyMarkup: category.Markup})
+		response := fmt.Sprintf("<b>%s</b>\n\n%s", category.Title, category.Content)
+		_, _ = cb.EditMessageText(c, response, &td.EditTextMessageOpts{ReplyMarkup: category.Markup, ParseMode: "HTML"})
 		return nil
 	}
 
