@@ -9,39 +9,39 @@
 package core
 
 import (
-	"ashokshau/tgmusic/config"
-	"ashokshau/tgmusic/src/utils"
-	"fmt"
+    "ashokshau/tgmusic/config"
+    "ashokshau/tgmusic/src/utils"
+    "fmt"
 
-	"github.com/AshokShau/gotdbot"
+    "github.com/AshokShau/gotdbot"
 )
 
 func cb(text, data string, style gotdbot.ButtonStyle) gotdbot.InlineKeyboardButton {
-	return gotdbot.InlineKeyboardButton{
-		Text: text,
-		Type: &gotdbot.InlineKeyboardButtonTypeCallback{
-			Data: []byte(data),
-		},
-		Style: style,
-	}
+    return gotdbot.InlineKeyboardButton{
+        Text: text,
+        Type: &gotdbot.InlineKeyboardButtonTypeCallback{
+            Data: []byte(data),
+        },
+        Style: style,
+    }
 }
 
 func userId(text string, userId int64, style gotdbot.ButtonStyle) gotdbot.InlineKeyboardButton {
-	return gotdbot.InlineKeyboardButton{
-		Text:  text,
-		Type:  &gotdbot.InlineKeyboardButtonTypeUser{UserId: userId},
-		Style: style,
-	}
+    return gotdbot.InlineKeyboardButton{
+        Text:  text,
+        Type:  &gotdbot.InlineKeyboardButtonTypeUser{UserId: userId},
+        Style: style,
+    }
 }
 
 func url(text, link string, style gotdbot.ButtonStyle) gotdbot.InlineKeyboardButton {
-	return gotdbot.InlineKeyboardButton{
-		Text: text,
-		Type: &gotdbot.InlineKeyboardButtonTypeUrl{
-			Url: link,
-		},
-		Style: style,
-	}
+    return gotdbot.InlineKeyboardButton{
+        Text: text,
+        Type: &gotdbot.InlineKeyboardButtonTypeUrl{
+            Url: link,
+        },
+        Style: style,
+    }
 }
 
 var CloseBtn = cb("Close", "vcplay_close", gotdbot.ButtonStyleDanger{})
@@ -59,166 +59,179 @@ var channelBtn = url("Updates", config.SupportChannel, gotdbot.ButtonStyleDefaul
 var groupBtn = url("Group", config.SupportGroup, gotdbot.ButtonStyleDefault{})
 
 func SupportKeyboard() *gotdbot.ReplyMarkupInlineKeyboard {
-	return &gotdbot.ReplyMarkupInlineKeyboard{
-		Rows: [][]gotdbot.InlineKeyboardButton{
-			{channelBtn, groupBtn},
-			{CloseBtn},
-		},
-	}
+    return &gotdbot.ReplyMarkupInlineKeyboard{
+        Rows: [][]gotdbot.InlineKeyboardButton{
+            {channelBtn, groupBtn},
+            {CloseBtn},
+        },
+    }
 }
 
 func SupportBtn() *gotdbot.ReplyMarkupInlineKeyboard {
-	return &gotdbot.ReplyMarkupInlineKeyboard{
-		Rows: [][]gotdbot.InlineKeyboardButton{
-			{channelBtn, groupBtn},
-		},
-	}
+    return &gotdbot.ReplyMarkupInlineKeyboard{
+        Rows: [][]gotdbot.InlineKeyboardButton{
+            {channelBtn, groupBtn},
+        },
+    }
 }
 
 func SettingsKeyboard(playMode, adminMode string, cmdDelete bool, language string) *gotdbot.ReplyMarkupInlineKeyboard {
-	playText := "Everyone"
-	if playMode == utils.Admins {
-		playText = "Admins"
-	}
+    playText := "Everyone"
+    if playMode == utils.Admins {
+        playText = "Admins"
+    }
 
-	deleteText := "False"
-	if cmdDelete {
-		deleteText = "True"
-	}
+    deleteText := "False"
+    if cmdDelete {
+        deleteText = "True"
+    }
 
-	adminText := "Everyone"
-	if adminMode == utils.Admins {
-		adminText = "Admins"
-	}
+    adminText := "Everyone"
+    if adminMode == utils.Admins {
+        adminText = "Admins"
+    }
 
-	langText := "English"
-	if language != "en" && language != "" {
-		langText = language
-	}
+    langText := "English"
+    if language != "en" && language != "" {
+        langText = language
+    }
 
-	return &gotdbot.ReplyMarkupInlineKeyboard{
-		Rows: [][]gotdbot.InlineKeyboardButton{
-			{
-				cb("Play Mode ➜", "settings_main", gotdbot.ButtonStyleDefault{}),
-				cb(playText, "settings_play", gotdbot.ButtonStyleDefault{}),
-			},
-			{
-				cb("Command Delete ➜", "settings_main", gotdbot.ButtonStyleDefault{}),
-				cb(deleteText, "settings_delete", gotdbot.ButtonStyleDefault{}),
-			},
-			{
-				cb("Admin Mode ➜", "settings_main", gotdbot.ButtonStyleDefault{}),
-				cb(adminText, "settings_admin", gotdbot.ButtonStyleDefault{}),
-			},
-			{
-				cb("Language ➜", "settings_main", gotdbot.ButtonStyleDefault{}),
-				cb(langText, "settings_lang", gotdbot.ButtonStyleDefault{}),
-			},
-			{CloseBtn},
-		},
-	}
+    return &gotdbot.ReplyMarkupInlineKeyboard{
+        Rows: [][]gotdbot.InlineKeyboardButton{
+            {
+                cb("Play Mode ➜", "settings_main", gotdbot.ButtonStyleDefault{}),
+                cb(playText, "settings_play", gotdbot.ButtonStyleDefault{}),
+            },
+            {
+                cb("Command Delete ➜", "settings_main", gotdbot.ButtonStyleDefault{}),
+                cb(deleteText, "settings_delete", gotdbot.ButtonStyleDefault{}),
+            },
+            {
+                cb("Admin Mode ➜", "settings_main", gotdbot.ButtonStyleDefault{}),
+                cb(adminText, "settings_admin", gotdbot.ButtonStyleDefault{}),
+            },
+            {
+                cb("Language ➜", "settings_main", gotdbot.ButtonStyleDefault{}),
+                cb(langText, "settings_lang", gotdbot.ButtonStyleDefault{}),
+            },
+            {CloseBtn},
+        },
+    }
 }
 
 func HelpMenuKeyboard() *gotdbot.ReplyMarkupInlineKeyboard {
-	return &gotdbot.ReplyMarkupInlineKeyboard{
-		Rows: [][]gotdbot.InlineKeyboardButton{
-			{UserBtn, AdminBtn, OwnerBtn},
-			{PlaylistBtn, DevsBtn, AutoplayBtn},
-			{HomeBtn, CloseBtn},
-		},
-	}
+    return &gotdbot.ReplyMarkupInlineKeyboard{
+        Rows: [][]gotdbot.InlineKeyboardButton{
+            {UserBtn, AdminBtn, OwnerBtn},
+            {PlaylistBtn, DevsBtn, AutoplayBtn},
+            {HomeBtn, CloseBtn},
+        },
+    }
 }
 
 func BackHelpMenuKeyboard() *gotdbot.ReplyMarkupInlineKeyboard {
-	return &gotdbot.ReplyMarkupInlineKeyboard{
-		Rows: [][]gotdbot.InlineKeyboardButton{
-			{HelpBtn, HomeBtn},
-			{CloseBtn, SourceCodeBtn},
-		},
-	}
+    return &gotdbot.ReplyMarkupInlineKeyboard{
+        Rows: [][]gotdbot.InlineKeyboardButton{
+            {HelpBtn, HomeBtn},
+            {CloseBtn, SourceCodeBtn},
+        },
+    }
 }
 
-// AddMeButton – Play वाले मैसेज के लिए (username पैरामीटर)
-func AddMeButton(username string) gotdbot.InlineKeyboardButton {
-	return url(
-		"Add Me In Your Group",
-		fmt.Sprintf("https://t.me/%s?startgroup=true", username),
-		gotdbot.ButtonStylePrimary{},
-	)
-}
+func ControlButtons(mode string) *gotdbot.ReplyMarkupInlineKeyboard {
+    skipBtn := cb("‣‣I", "play_skip", gotdbot.ButtonStyleDefault{})
+    stopBtn := cb("▢", "play_stop", gotdbot.ButtonStyleDefault{})
+    pauseBtn := cb("II", "play_pause", gotdbot.ButtonStyleDefault{})
+    resumeBtn := cb("▷", "play_resume", gotdbot.ButtonStyleDefault{})
+    muteBtn := cb("🔇", "play_mute", gotdbot.ButtonStyleDefault{})
+    unmuteBtn := cb("🔊", "play_unmute", gotdbot.ButtonStyleDefault{})
 
-// AddMeShortButton – Queue वाले मैसेज के लिए (username पैरामीटर)
-func AddMeShortButton(username string) gotdbot.InlineKeyboardButton {
-	return url(
-		"Add Me",
-		fmt.Sprintf("https://t.me/%s?startgroup=true", username),
-		gotdbot.ButtonStylePrimary{},
-	)
-}
+    // Dynamically fetching bot username from config for multiple bots
+    addMeUrl := fmt.Sprintf("https://t.me/%s?startgroup=true", config.BotUsername)
+    addMeBtn := url("Aᴅᴅ Mᴇ Iɴ Yᴏᴜʀ Gʀᴏᴜᴘ", addMeUrl, gotdbot.ButtonStylePrimary{})
 
-// ControlButtons – अब mode और username दोनों लेता है
-func ControlButtons(mode string, username string) *gotdbot.ReplyMarkupInlineKeyboard {
-	skipBtn := cb("‣‣I", "play_skip", gotdbot.ButtonStyleDefault{})
-	stopBtn := cb("▢", "play_stop", gotdbot.ButtonStyleDefault{})
-	pauseBtn := cb("II", "play_pause", gotdbot.ButtonStyleDefault{})
-	resumeBtn := cb("▷", "play_resume", gotdbot.ButtonStyleDefault{})
-	muteBtn := cb("🔇", "play_mute", gotdbot.ButtonStyleDefault{})
-	unmuteBtn := cb("🔊", "play_unmute", gotdbot.ButtonStyleDefault{})
+    switch mode {
 
-	var row1 []gotdbot.InlineKeyboardButton
-	switch mode {
-	case "play":
-		row1 = []gotdbot.InlineKeyboardButton{skipBtn, stopBtn, pauseBtn}
-	case "pause":
-		row1 = []gotdbot.InlineKeyboardButton{skipBtn, stopBtn, resumeBtn}
-	case "resume":
-		row1 = []gotdbot.InlineKeyboardButton{skipBtn, stopBtn, pauseBtn}
-	case "mute":
-		row1 = []gotdbot.InlineKeyboardButton{skipBtn, stopBtn, unmuteBtn}
-	case "unmute":
-		row1 = []gotdbot.InlineKeyboardButton{skipBtn, stopBtn, muteBtn}
-	default:
-		row1 = []gotdbot.InlineKeyboardButton{CloseBtn}
-	}
+    case "play":
+        return &gotdbot.ReplyMarkupInlineKeyboard{
+            Rows: [][]gotdbot.InlineKeyboardButton{
+                {skipBtn, stopBtn, pauseBtn},
+                {addMeBtn},
+                {CloseBtn},
+            },
+        }
 
-	row2 := []gotdbot.InlineKeyboardButton{AddMeButton(username)}
-	row3 := []gotdbot.InlineKeyboardButton{CloseBtn}
+    case "pause":
+        return &gotdbot.ReplyMarkupInlineKeyboard{
+            Rows: [][]gotdbot.InlineKeyboardButton{
+                {skipBtn, stopBtn, resumeBtn},
+                {CloseBtn},
+            },
+        }
 
-	return &gotdbot.ReplyMarkupInlineKeyboard{
-		Rows: [][]gotdbot.InlineKeyboardButton{
-			row1,
-			row2,
-			row3,
-		},
-	}
+    case "resume":
+        return &gotdbot.ReplyMarkupInlineKeyboard{
+            Rows: [][]gotdbot.InlineKeyboardButton{
+                {skipBtn, stopBtn, pauseBtn},
+                {CloseBtn},
+            },
+        }
+
+    case "mute":
+        return &gotdbot.ReplyMarkupInlineKeyboard{
+            Rows: [][]gotdbot.InlineKeyboardButton{
+                {skipBtn, stopBtn, unmuteBtn},
+                {CloseBtn},
+            },
+        }
+
+    case "unmute":
+        return &gotdbot.ReplyMarkupInlineKeyboard{
+            Rows: [][]gotdbot.InlineKeyboardButton{
+                {skipBtn, stopBtn, muteBtn},
+                {CloseBtn},
+            },
+        }
+
+    default:
+        return &gotdbot.ReplyMarkupInlineKeyboard{
+            Rows: [][]gotdbot.InlineKeyboardButton{
+                {CloseBtn},
+            },
+        }
+    }
 }
 
 func AddMeMarkup(username string) *gotdbot.ReplyMarkupInlineKeyboard {
-	addMeBtn := url(
-		"Aᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ",
-		fmt.Sprintf("https://t.me/%s?startgroup=true", username),
-		gotdbot.ButtonStylePrimary{},
-	)
 
-	return &gotdbot.ReplyMarkupInlineKeyboard{
-		Rows: [][]gotdbot.InlineKeyboardButton{
-			{addMeBtn},
-			{HelpBtn},
-			{channelBtn, groupBtn},
-			{SourceCodeBtn},
-		},
-	}
+    addMeBtn := url(
+        "Aᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ",
+        fmt.Sprintf("https://t.me/%s?startgroup=true", username),
+        gotdbot.ButtonStylePrimary{},
+    )
+
+    return &gotdbot.ReplyMarkupInlineKeyboard{
+        Rows: [][]gotdbot.InlineKeyboardButton{
+            {addMeBtn},
+            {HelpBtn},
+            {channelBtn, groupBtn},
+            {SourceCodeBtn},
+        },
+    }
 }
 
 func PlayNowButton(trackID string) gotdbot.InlineKeyboardButton {
-	return cb("Play Now", fmt.Sprintf("play_now_%s", trackID), gotdbot.ButtonStyleDanger{})
+    return cb("Play Now", fmt.Sprintf("play_now_%s", trackID), gotdbot.ButtonStyleDanger{})
 }
 
-// QueueMarkup – अब username लेता है (trackID हटा दिया)
-func QueueMarkup(username string) *gotdbot.ReplyMarkupInlineKeyboard {
-	return &gotdbot.ReplyMarkupInlineKeyboard{
-		Rows: [][]gotdbot.InlineKeyboardButton{
-			{AddMeShortButton(username), CloseBtn},
-		},
-	}
+func QueueMarkup(trackID string) *gotdbot.ReplyMarkupInlineKeyboard {
+    // Dynamically fetching bot username from config
+    addMeUrl := fmt.Sprintf("https://t.me/%s?startgroup=true", config.BotUsername)
+    addMeBtn := url("Aᴅᴅ Mᴇ", addMeUrl, gotdbot.ButtonStylePrimary{})
+
+    return &gotdbot.ReplyMarkupInlineKeyboard{
+        Rows: [][]gotdbot.InlineKeyboardButton{
+            {addMeBtn, CloseBtn},
+        },
+    }
 }
