@@ -14,14 +14,9 @@ import (
 	"ashokshau/tgmusic/config"
 	"ashokshau/tgmusic/src/utils"
 	"context"
-	"crypto/rand"
 	"errors"
 	"fmt"
 	"log/slog"
-	"math/big"
-	"os"
-	"os/exec"
-	"path/filepath"
 	"regexp"
 	"strings"
 )
@@ -165,116 +160,13 @@ func (y *youTubeData) downloadTrack(info utils.TrackInfo, video bool) (string, e
 		return info.CdnURL, nil
 	}
 
-	if !video {
-		filePath, err := y.downloadWithApi(info.Id, video)
-		if err == nil {
-			return filePath, nil
-		}
-		slog.Warn("downloadWithApi failed, falling back to yt-dlp", "video_id", info.Id, "error", err)
+	filePath, err := y.downloadWithApi(info.Id, video)
+	if err == nil {
+		return filePath, nil
 	}
 
-	return y.downloadWithYtDlp(info.Id, video)
-}
-
-func (y *youTubeData) buildYtdlpParams(videoID string, video bool) ([]string, string) {
-	outputTemplate := filepath.Join(config.DownloadsDir, "%(id)s.%(ext)s")
-	var cookieFile string
-
-	params := []string{
-		"yt-dlp",
-		"--no-warnings",
-		"--quiet",
-		"--geo-bypass",
-		"--retries", "2",
-		"--continue",
-		"--no-part",
-		"--concurrent-fragments", "3",
-		"--socket-timeout", "10",
-		"--throttled-rate", "100K",
-		"--retry-sleep", "1",
-		"--no-write-thumbnail",
-		"--no-write-info-json",
-		"--no-embed-metadata",
-		"--no-embed-chapters",
-		"--no-embed-subs",
-		"--extractor-args", "youtube:player_js_version=actual",
-		"-o", outputTemplate,
-	}
-
-	if video {
-		formatSelector := "bestvideo[height<=720]+bestaudio/best[height<=720]"
-		params = append(params, "-f", formatSelector, "--merge-output-format", "mp4")
-	} else {
-		params = append(params, "-f", "bestaudio[ext=m4a]/bestaudio")
-	}
-
-	cookieFile = y.getCookieFile()
-	if cookieFile != "" {
-		params = append(params, "--cookies", cookieFile)
-	} else if config.Proxy != "" {
-		params = append(params, "--proxy", config.Proxy)
-	}
-
-	videoURL := "https://www.youtube.com/watch?v=" + videoID
-	params = append(params, videoURL, "--print", "after_move:filepath")
-
-	return params, cookieFile
-}
-
-func (y *youTubeData) downloadWithYtDlp(videoID string, video bool) (string, error) {
-	if videoID == "" {
-		return "", errors.New("videoID is empty")
-	}
-
-	ytdlpParams, cookieFile := y.buildYtdlpParams(videoID, video)
-
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-	defer cancel()
-
-	cmd := exec.CommandContext(ctx, ytdlpParams[0], ytdlpParams[1:]...)
-
-	output, err := cmd.Output()
-	if err != nil {
-		var exitErr *exec.ExitError
-		if errors.As(err, &exitErr) {
-			stderr := string(exitErr.Stderr)
-			if cookieFile != "" && strings.Contains(stderr, "Sign in to confirm you're not a bot") {
-				_ = os.Remove(cookieFile)
-			}
-			return "", fmt.Errorf("yt-dlp failed with exit code %d: %s", exitErr.ExitCode(), stderr)
-		}
-
-		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
-			return "", fmt.Errorf("yt-dlp timed out for video ID: %s", videoID)
-		}
-
-		return "", fmt.Errorf("an unexpected error occurred while downloading %s: %w", videoID, err)
-	}
-
-	downloadedPathStr := strings.TrimSpace(string(output))
-	if downloadedPathStr == "" {
-		return "", fmt.Errorf("no output path was returned for %s", videoID)
-	}
-
-	if _, err := os.Stat(downloadedPathStr); os.IsNotExist(err) {
-		return "", fmt.Errorf("the file was not found at the reported path: %s", downloadedPathStr)
-	}
-
-	return downloadedPathStr, nil
-}
-
-func (y *youTubeData) getCookieFile() string {
-	cookiesPath := config.CookiesPath
-	if len(cookiesPath) == 0 {
-		return ""
-	}
-	n, err := rand.Int(rand.Reader, big.NewInt(int64(len(cookiesPath))))
-	if err != nil {
-		slog.Info("Could not generate a random number", "error", err)
-		return cookiesPath[0]
-	}
-
-	return cookiesPath[n.Int64()]
+	slog.Warn("downloadWithApi failed", "video_id", info.Id, "video", video, "error", err)
+	return "", fmt.Errorf("Failed to process the query.\n\nIf the issue persists, report it to the support chat: %s", config.SupportGroup)
 }
 
 func (y *youTubeData) downloadWithApi(videoID string, video bool) (string, error) {
