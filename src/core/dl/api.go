@@ -162,23 +162,20 @@ func (a *apiData) getTrack() (utils.TrackInfo, error) {
 
 // downloadTrack downloads a track using the API. If the track is a YouTube video and video format is requested,
 func (a *apiData) downloadTrack(info utils.TrackInfo, video bool) (string, error) {
-	// if the track is from YouTube and video:true
-	yt := newYouTubeData(a.Query)
-	if info.Platform == utils.YouTube && video {
-		return yt.downloadTrack(info, video)
+	if info.Platform == utils.YouTube {
+		return newYouTubeData(a.Query).downloadTrack(info, video)
 	}
 
 	downloader, err := newDownload(info)
 	if err != nil {
-		return "", fmt.Errorf("failed to initialize the download: %w", err)
+		slog.Warn("failed to initialize the download", "error", err)
+		return "", fmt.Errorf("Failed to process the query.\n\nIf the issue persists, report it to the support chat: %s", config.SupportGroup)
 	}
 
 	filePath, err := downloader.Process()
 	if err != nil {
-		if info.Platform == utils.YouTube {
-			return yt.downloadTrack(info, video)
-		}
-		return "", fmt.Errorf("the download process failed: %w", err)
+		slog.Warn("the download process failed", "error", err)
+		return "", fmt.Errorf("Failed to process the query.\n\nIf the issue persists, report it to the support chat: %s", config.SupportGroup)
 	}
 
 	if strings.Contains(a.ApiUrl, filePath) {
